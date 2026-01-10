@@ -85,7 +85,9 @@ export default {
       fontFamily: {
         sans: ["var(--font-sans)"],
         serif: ["var(--font-serif)"],
-        mono: ["var(--font-mono)"],
+        mono: ["'Rajdhani'", "var(--font-mono)"],
+        display: ["'Orbitron'", "sans-serif"],
+        body: ["'Inter'", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {
