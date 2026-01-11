@@ -110,7 +110,14 @@ export async function registerRoutes(
         * Use hi-hat sparingly, prefer ride for verses
         * Snare often on unexpected beats, not just 2 and 4
       - For Metal: aggressive double bass, powerful snare hits, crash accents on downbeats.
-      - For Blast Beat: fast, intense, alternating kick/snare or unison.
+      - For Blast Beat: THIS IS CRITICAL - A blast beat is a SPECIFIC, RELENTLESS pattern:
+        * REQUIRED: Kick drum on EVERY SINGLE 16th note (steps 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31)
+        * REQUIRED: Snare on EVERY OTHER 16th note, alternating with kick accents (steps 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31 OR steps 0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30)
+        * REQUIRED: Ride or hi-hat on every beat or every other 16th for intensity
+        * Velocities should be HIGH (100-127) and consistent for machine-gun intensity
+        * Add crash on step 0 and step 16 for impact
+        * This creates the signature "wall of sound" blast beat effect
+        * Think Slayer, Cannibal Corpse, Nile, Origin - RELENTLESS speed and density
       - For Intro: build-up or establishing groove.
       - For Pop (Lady Gaga, Britney Spears, Maroon 5, Jonas Brothers): focus on a strong, steady kick on 1 and 3, consistent backbeat on 2 and 4, and clear, danceable hi-hat patterns.
       - For Jazz: swung feel, ride cymbal emphasis, ghost notes on snare, subtle kick patterns.
