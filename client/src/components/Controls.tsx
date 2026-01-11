@@ -15,7 +15,7 @@ interface ControlsProps {
   isGenerating: boolean;
 }
 
-const STYLES = ["Djent", "Metal", "Rock", "Post-hardcore", "Industrial", "Cyberpunk"];
+const STYLES = ["Djent", "Metal", "Rock", "Post-hardcore", "Pop", "Industrial", "Cyberpunk"];
 const TYPES = ["Groove", "Fill", "Breakdown", "Intro", "Blast Beat"];
 
 export function Controls({ 
