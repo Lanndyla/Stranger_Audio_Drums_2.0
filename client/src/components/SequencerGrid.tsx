@@ -16,9 +16,8 @@ interface SequencerGridProps {
 }
 
 export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying }: SequencerGridProps) {
-  const steps = 16; // Standard 16-step grid
+  const steps = 16;
 
-  // Transform flat grid data into a lookup map for rendering efficiency
   const gridMap = useMemo(() => {
     const map = new Map<string, number>();
     gridData.forEach(item => {
@@ -28,87 +27,79 @@ export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying }
   }, [gridData]);
 
   return (
-    <div className="w-full overflow-x-auto p-1">
-      <div className="min-w-[800px] grid grid-cols-[100px_1fr] gap-4">
-        
-        {/* Instrument Labels */}
-        <div className="flex flex-col gap-1 pt-6">
-          {DRUM_ROWS.map((row) => (
-            <div 
-              key={row.id} 
-              className="h-10 flex items-center justify-end pr-4 text-xs font-mono font-bold text-muted-foreground tracking-widest uppercase bg-card/50 rounded-l-sm border-r-2 border-primary/20"
-            >
+    <div className="w-full overflow-x-auto p-4 custom-scrollbar">
+      <div className="min-w-[1000px] flex flex-col gap-3">
+        {DRUM_ROWS.map((row) => (
+          <div key={row.id} className="flex items-center gap-4">
+            {/* Label */}
+            <div className="w-24 text-right pr-4 text-[10px] font-display font-bold text-primary/70 tracking-tighter uppercase whitespace-nowrap">
               {row.label}
             </div>
-          ))}
-        </div>
 
-        {/* The Grid */}
-        <div className="relative">
-          {/* Step Indicators */}
-          <div className="grid grid-cols-16 gap-1 mb-2 h-4">
+            {/* Row of Cubes */}
+            <div className="flex-1 grid grid-cols-16 gap-2">
+              {Array.from({ length: steps }).map((_, stepIndex) => {
+                const velocity = gridMap.get(`${row.id}-${stepIndex}`);
+                const isActive = velocity !== undefined;
+                const isCurrent = currentStep === stepIndex;
+                const isDownbeat = stepIndex % 4 === 0;
+
+                return (
+                  <div key={stepIndex} className="relative aspect-square">
+                    <button
+                      onClick={() => onToggleStep(stepIndex, row.id)}
+                      className={cn(
+                        "w-full h-full rounded-sm transition-all duration-150 preserve-3d",
+                        "border border-white/5 bg-card/30 hover:bg-card/50",
+                        isActive && "bg-primary/20 border-primary/40 shadow-[0_0_15px_rgba(0,243,255,0.2)]",
+                        isCurrent && "ring-2 ring-white/20 ring-inset",
+                        isCurrent && isActive && isPlaying && "bg-primary border-primary shadow-[0_0_20px_rgba(0,243,255,0.6)] scale-110 z-10"
+                      )}
+                      style={{
+                        transform: isActive ? 'translateZ(10px)' : 'translateZ(0px)',
+                      }}
+                    >
+                      {/* Depth Effect (Pseudo-cube) */}
+                      {isActive && (
+                        <>
+                          <div className="absolute inset-0 bg-primary/10 rounded-sm transform translate-z-[-4px]" />
+                          <div 
+                            className="absolute bottom-1 left-1 right-1 bg-primary/40 rounded-full transition-all duration-300"
+                            style={{ height: `${(velocity / 127) * 20}%`, opacity: 0.6 }}
+                          />
+                        </>
+                      )}
+
+                      {/* Accent for downbeats */}
+                      {isDownbeat && !isActive && (
+                        <div className="absolute inset-0 border-l border-white/10 pointer-events-none" />
+                      )}
+                    </button>
+                    
+                    {/* Step Highlight Line */}
+                    {isCurrent && (
+                      <div className="absolute -top-1 -bottom-1 left-0 right-0 border-x border-primary/30 pointer-events-none animate-pulse" />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+        
+        {/* Step Numbers Footer */}
+        <div className="flex items-center gap-4 mt-2">
+          <div className="w-24" />
+          <div className="flex-1 grid grid-cols-16 gap-2">
             {Array.from({ length: steps }).map((_, i) => (
               <div 
                 key={i} 
                 className={cn(
-                  "flex items-end justify-center text-[10px] font-mono transition-colors duration-75",
-                  i === currentStep ? "text-primary font-bold" : "text-muted-foreground/30",
-                  (i % 4 === 0) && "text-muted-foreground/60" // Highlight downbeats
+                  "text-[8px] font-mono text-center transition-colors",
+                  i === currentStep ? "text-primary font-bold" : "text-muted-foreground/30"
                 )}
               >
-                <div className={cn(
-                  "w-full h-1 rounded-full",
-                  i === currentStep ? "bg-primary shadow-[0_0_10px_rgba(0,243,255,0.8)]" : "bg-muted"
-                )} />
-              </div>
-            ))}
-          </div>
-
-          {/* Rows */}
-          <div className="flex flex-col gap-1">
-            {DRUM_ROWS.map((row) => (
-              <div key={row.id} className="grid grid-cols-16 gap-1 h-10">
-                {Array.from({ length: steps }).map((_, stepIndex) => {
-                  const velocity = gridMap.get(`${row.id}-${stepIndex}`);
-                  const isActive = velocity !== undefined;
-                  const isCurrent = currentStep === stepIndex;
-                  const isDownbeat = stepIndex % 4 === 0;
-
-                  return (
-                    <button
-                      key={stepIndex}
-                      onClick={() => onToggleStep(stepIndex, row.id)}
-                      className={cn(
-                        "relative h-full w-full rounded-sm border transition-all duration-100 focus:outline-none focus:ring-1 focus:ring-primary/50 group overflow-hidden",
-                        // Base styles
-                        "bg-card hover:bg-card/80",
-                        // Border styles for beats
-                        isDownbeat ? "border-l-white/10" : "border-transparent",
-                        // Active State
-                        isActive 
-                          ? "bg-primary/20 border-primary/50 shadow-[inset_0_0_10px_rgba(0,243,255,0.2)]" 
-                          : "hover:border-white/10",
-                        // Playing Head style
-                        isCurrent && "bg-white/5",
-                        // Flash on trigger
-                        (isCurrent && isActive && isPlaying) && "bg-primary shadow-[0_0_15px_rgba(0,243,255,0.8)] border-primary z-10 scale-105"
-                      )}
-                    >
-                      {/* Velocity Bar (Visual depth) */}
-                      {isActive && (
-                        <div 
-                          className="absolute bottom-0 left-0 right-0 bg-primary/80 transition-all"
-                          style={{ height: `${(velocity / 127) * 100}%` }}
-                        />
-                      )}
-                      
-                      {/* Step Number Hint on Hover */}
-                      <span className="absolute top-0.5 left-1 text-[8px] text-white/20 opacity-0 group-hover:opacity-100 font-mono">
-                        {stepIndex + 1}
-                      </span>
-                    </button>
-                  );
-                })}
+                {String(i + 1).padStart(2, '0')}
               </div>
             ))}
           </div>
