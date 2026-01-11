@@ -37,14 +37,14 @@ export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying }
         }}
       >
         {/* Header Row for Step Numbers */}
-        <div className="h-6 bg-black/40 border-b border-white/5 flex items-center justify-end pr-3 font-mono text-[9px] text-muted-foreground uppercase tracking-wider sticky left-0 z-20">
+        <div className="h-10 bg-black/40 border-b border-white/5 flex items-center justify-end pr-3 font-mono text-[10px] text-muted-foreground uppercase tracking-wider sticky left-0 z-20">
           Track
         </div>
         {Array.from({ length: steps }).map((_, i) => (
           <div 
             key={i} 
             className={cn(
-              "h-6 border-b border-white/5 flex items-center justify-center text-[9px] font-mono transition-colors",
+              "h-10 border-b border-white/5 flex items-center justify-center text-[10px] font-mono transition-colors",
               i === currentStep ? "bg-primary/20 text-primary" : "bg-black/20 text-muted-foreground/40",
               i % 4 === 0 && "border-l border-white/10",
               "w-full min-w-[24px]"
@@ -58,7 +58,7 @@ export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying }
         {DRUM_ROWS.map((row) => (
           <div key={row.id} className="contents">
             <div 
-              className="h-6 flex items-center justify-end pr-3 text-[10px] font-mono font-bold text-muted-foreground/80 tracking-tight uppercase bg-black/40 border-b border-white/5 sticky left-0 z-10 whitespace-nowrap"
+              className="h-10 flex items-center justify-end pr-3 text-[11px] font-mono font-bold text-muted-foreground/80 tracking-tight uppercase bg-black/40 border-b border-white/5 sticky left-0 z-10 whitespace-nowrap"
             >
               {row.label.split(' ')[0]}
             </div>
@@ -73,7 +73,7 @@ export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying }
                   key={`${row.id}-${stepIndex}`}
                   onClick={() => onToggleStep(stepIndex, row.id as DrumInstrument)}
                   className={cn(
-                    "h-6 border-b border-r border-white/5 transition-all duration-75 relative focus:outline-none w-full min-w-[24px]",
+                    "h-10 border-b border-r border-white/5 transition-all duration-75 relative focus:outline-none w-full min-w-[24px]",
                     isDownbeat && "border-l border-white/10",
                     isActive ? "bg-primary shadow-[inset_0_0_8px_rgba(0,0,0,0.3)]" : "bg-[#222] hover:bg-[#2a2a2a]",
                     isCurrent && "after:absolute after:inset-0 after:bg-white/10 after:pointer-events-none"
