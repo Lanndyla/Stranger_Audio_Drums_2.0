@@ -75,16 +75,21 @@ export async function registerRoutes(
     try {
       const { style, bpm, type } = api.patterns.generate.input.parse(req.body);
 
-      const prompt = `Generate a drum pattern for a ${style} song. 
+      const prompt = `Generate a UNIQUE and creative drum pattern for a ${style} song. 
       BPM: ${bpm}. Type: ${type}.
+      This request ID is ${Math.random()}. Ensure this pattern is distinct from previous outputs.
       Return a JSON object with two fields:
       1. 'grid': an array of objects representing the pattern. Each object has:
          - 'step': integer 0-15 (16 steps)
          - 'drum': string (one of: 'kick', 'snare', 'hihat_closed', 'hihat_open', 'tom_1', 'tom_2', 'crash', 'ride')
-         - 'velocity': integer 0-127
+         - 'velocity': integer 0-127 (Vary velocities for human feel!)
       2. 'suggestedName': a creative string name for this pattern.
       
-      Make it realistic for the genre. For Djent/Metal, use syncopated kicks and aggressive snares.
+      Make it realistic for the genre. 
+      - For Djent/Metal: use syncopated kicks, ghost notes on snare, and aggressive accents.
+      - For Blast Beat: fast, intense, alternating kick/snare or unison.
+      - For Intro: build-up or establishing groove.
+      
       Ensure the JSON is valid and only return the JSON.`;
 
       const completion = await openai.chat.completions.create({
