@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import * as Tone from "tone";
-import { Download, Play, Save, Square, Music, Volume2, Shuffle, ListMusic, Plus, Trash2 } from "lucide-react";
+import { Download, Play, Save, Square, Music, Volume2, Shuffle, ListMusic, Plus, Trash2, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import { usePatterns, useCreatePattern, useGeneratePattern, useExportMidi, usePattern } from "@/hooks/use-patterns";
@@ -42,6 +42,7 @@ export default function Studio() {
   const [selectedPatternId, setSelectedPatternId] = useState<number | null>(null);
   const [saveName, setSaveName] = useState("");
   const [isSaveOpen, setIsSaveOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
   // New advanced features state
   const [complexity, setComplexity] = useState(50);
@@ -323,8 +324,29 @@ export default function Studio() {
           <PatternList onSelect={(id) => setSelectedPatternId(id)} selectedId={selectedPatternId} />
         </div>
         
-        <div className="p-4 border-t border-border bg-black/20 text-[10px] text-muted-foreground font-mono text-center">
-           v2.0.0 // ADVANCED MODE
+        <div className="p-4 border-t border-border bg-black/20 text-[10px] text-muted-foreground font-mono flex items-center justify-between">
+          <span>v2.0.0</span>
+          <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-6 w-6" data-testid="button-settings">
+                <Settings className="h-3 w-3" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <div className="flex flex-col items-center justify-center py-8 space-y-6">
+                <img 
+                  src="/assets/Stranger_Amps_UI_0018_Logo_1768104907791.png" 
+                  alt="Stranger Audio" 
+                  className="h-24 w-24 rounded-lg object-cover"
+                />
+                <div className="text-center space-y-2">
+                  <h2 className="font-display text-2xl font-bold text-white">Stranger Drums</h2>
+                  <p className="text-muted-foreground">Created by Stranger Audio</p>
+                  <p className="text-xs text-muted-foreground/60 font-mono">v2.0.0</p>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </aside>
 
