@@ -20,6 +20,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest } from "@/lib/queryClient";
 
+const TIME_SIGNATURES = ["4/4", "3/4", "5/4", "6/8", "7/8", "5/8", "9/8", "12/8"];
+
 interface GridStep {
   step: number;
   drum: string;
@@ -520,7 +522,6 @@ export default function Studio() {
           bpm={bpm} setBpm={setBpm}
           style={style} setStyle={setStyle}
           type={type} setType={setType}
-          timeSignature={timeSignature} setTimeSignature={setTimeSignature}
           onGenerate={handleGenerate}
           isGenerating={generatePattern.isPending}
           complexity={complexity} setComplexity={setComplexity}
@@ -530,7 +531,7 @@ export default function Studio() {
 
         {/* Tabs for Pattern / Arrangement */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-          <div className="px-6 pt-4 bg-black/20">
+          <div className="px-6 pt-4 bg-black/20 flex items-center justify-between gap-4">
             <TabsList className="bg-black/40">
               <TabsTrigger value="pattern" className="data-[state=active]:bg-primary/20" data-testid="tab-pattern">
                 <Volume2 className="w-4 h-4 mr-2" /> Pattern Editor
@@ -539,6 +540,19 @@ export default function Studio() {
                 <ListMusic className="w-4 h-4 mr-2" /> Song Arrangement ({arrangement.length})
               </TabsTrigger>
             </TabsList>
+            
+            {/* Time Signature Selector */}
+            <div className="flex items-center gap-2">
+              <Label className="font-mono text-[10px] text-accent/80 uppercase tracking-widest">Time Sig</Label>
+              <Select value={timeSignature} onValueChange={setTimeSignature}>
+                <SelectTrigger className="h-8 w-20 border-accent/30 focus:ring-accent/50 bg-black/40" data-testid="select-time-signature">
+                  <SelectValue placeholder="4/4" />
+                </SelectTrigger>
+                <SelectContent>
+                  {TIME_SIGNATURES.map(ts => <SelectItem key={ts} value={ts}>{ts}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* Pattern Editor Tab */}
