@@ -29,24 +29,12 @@ export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying }
 
   return (
     <div className="w-full overflow-x-auto p-1">
-      <div className="min-w-[800px] grid grid-cols-[100px_1fr] gap-4">
+      <div className="min-w-[800px] flex flex-col gap-2">
         
-        {/* Instrument Labels */}
-        <div className="flex flex-col gap-1 pt-6">
-          {DRUM_ROWS.map((row) => (
-            <div 
-              key={row.id} 
-              className="h-10 flex items-center justify-end pr-4 text-xs font-mono font-bold text-muted-foreground tracking-widest uppercase bg-card/50 rounded-l-sm border-r-2 border-primary/20"
-            >
-              {row.label}
-            </div>
-          ))}
-        </div>
-
-        {/* The Grid */}
-        <div className="relative">
-          {/* Step Indicators */}
-          <div className="grid grid-cols-16 gap-1 mb-2 h-4">
+        {/* Step Indicators Header */}
+        <div className="grid grid-cols-[100px_1fr] gap-4">
+          <div /> {/* Spacer for labels */}
+          <div className="grid grid-cols-16 gap-1 h-4">
             {Array.from({ length: steps }).map((_, i) => (
               <div 
                 key={i} 
@@ -63,11 +51,19 @@ export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying }
               </div>
             ))}
           </div>
+        </div>
 
-          {/* Rows */}
-          <div className="flex flex-col gap-1">
-            {DRUM_ROWS.map((row) => (
-              <div key={row.id} className="grid grid-cols-16 gap-1 h-10">
+        {/* Rows */}
+        <div className="flex flex-col gap-1">
+          {DRUM_ROWS.map((row) => (
+            <div key={row.id} className="grid grid-cols-[100px_1fr] gap-4">
+              {/* Label */}
+              <div className="flex items-center justify-end pr-4 text-xs font-mono font-bold text-muted-foreground tracking-widest uppercase bg-card/50 rounded-l-sm border-r-2 border-primary/20">
+                {row.label}
+              </div>
+              
+              {/* Grid Steps */}
+              <div className="grid grid-cols-16 gap-1">
                 {Array.from({ length: steps }).map((_, stepIndex) => {
                   const velocity = gridMap.get(`${row.id}-${stepIndex}`);
                   const isActive = velocity !== undefined;
@@ -79,7 +75,7 @@ export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying }
                       key={stepIndex}
                       onClick={() => onToggleStep(stepIndex, row.id)}
                       className={cn(
-                        "relative h-full w-full rounded-sm border transition-all duration-100 focus:outline-none focus:ring-1 focus:ring-primary/50 group overflow-hidden",
+                        "relative aspect-square w-full rounded-sm border transition-all duration-100 focus:outline-none focus:ring-1 focus:ring-primary/50 group overflow-hidden",
                         // Base styles
                         "bg-card hover:bg-card/80",
                         // Border styles for beats
@@ -110,8 +106,8 @@ export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying }
                   );
                 })}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
