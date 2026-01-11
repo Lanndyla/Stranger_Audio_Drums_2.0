@@ -8,7 +8,7 @@ namespace StrangerDrums {
 class AIPatternGenerator {
 public:
     AIPatternGenerator(const juce::String& apiKey) 
-        : openAIKey(apiKey) {}
+        : openAIKey() {}
     
     // Async pattern generation
     void generatePattern(

@@ -74,7 +74,10 @@ export async function registerRoutes(
   app.post(api.patterns.generate.path, async (req, res) => {
     try {
       const { style, bpm, type } = api.patterns.generate.input.parse(req.body);
-      const { complexity = 50, secondaryStyle, styleMix = 70, timeSignature = "4/4", stepCount = 32 } = req.body;
+      const { complexity = 50, secondaryStyle, styleMix = 70, timeSignature = "4/4", stepCount = 32, apiKey } = req.body;
+      
+      // Use personal API key if provided, otherwise use default
+      const client = apiKey ? new OpenAI({ apiKey }) : openai;
 
       let styleDescription = style;
       if (secondaryStyle && secondaryStyle !== "none") {
@@ -155,8 +158,8 @@ export async function registerRoutes(
       
       Ensure the JSON is valid and only return the JSON.`;
 
-      const completion = await openai.chat.completions.create({
-        model: "gpt-5.1",
+      const completion = await client.chat.completions.create({
+        model: apiKey ? "gpt-4o" : "gpt-5.1",
         messages: [{ role: "user", content: prompt }],
         response_format: { type: "json_object" },
       });

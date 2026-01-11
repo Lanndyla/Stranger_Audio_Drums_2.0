@@ -50,6 +50,7 @@ export default function Studio() {
   const [saveName, setSaveName] = useState("");
   const [isSaveOpen, setIsSaveOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [personalApiKey, setPersonalApiKey] = useState(() => localStorage.getItem('stranger_drums_api_key') || '');
   const [midiInputs, setMidiInputs] = useState<{ id: string; name: string }[]>([]);
   const [midiOutputs, setMidiOutputs] = useState<{ id: string; name: string }[]>([]);
   const [selectedMidiInput, setSelectedMidiInput] = useState<string | null>(null);
@@ -255,6 +256,12 @@ export default function Studio() {
       if (secondaryStyle !== "none") {
         payload.secondaryStyle = secondaryStyle;
         payload.styleMix = styleMix;
+      }
+      
+      // Include personal API key if provided
+      const savedApiKey = localStorage.getItem('stranger_drums_api_key');
+      if (savedApiKey) {
+        payload.apiKey = savedApiKey;
       }
       
       const data = await generatePattern.mutateAsync(payload);
@@ -509,6 +516,40 @@ export default function Studio() {
                     Refresh MIDI Devices
                   </Button>
                 </div>
+              </div>
+              
+              <div className="border-t border-border pt-4 space-y-4">
+                <div className="flex items-center gap-2 text-sm font-mono text-muted-foreground">
+                  <Settings className="h-4 w-4" />
+                  <span>OpenAI API Key</span>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Input
+                    type="password"
+                    value={personalApiKey}
+                    onChange={(e) => setPersonalApiKey(e.target.value)}
+                    placeholder="sk-..."
+                    className="flex-1 h-8 text-xs bg-black/50 border-white/10 font-mono"
+                    data-testid="input-api-key"
+                  />
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="h-8 text-xs"
+                    onClick={() => {
+                      localStorage.setItem('stranger_drums_api_key', personalApiKey);
+                      toast({ title: "API Key Saved", description: "Your personal OpenAI key has been saved." });
+                    }}
+                    data-testid="button-save-api-key"
+                  >
+                    <Save className="h-3 w-3 mr-1" />
+                    Save
+                  </Button>
+                </div>
+                <p className="text-[10px] text-muted-foreground/60">
+                  Optional: Use your own OpenAI API key for pattern generation.
+                </p>
               </div>
             </DialogContent>
           </Dialog>
