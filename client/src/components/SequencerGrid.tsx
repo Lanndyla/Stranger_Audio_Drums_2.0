@@ -38,12 +38,12 @@ export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying }
   }, [gridData]);
 
   return (
-    <div className="w-full overflow-x-auto bg-[#1a1a1a] rounded-sm border border-white/5 shadow-inner scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+    <div className="w-full bg-[#1a1a1a] rounded-sm border border-white/5 shadow-inner">
       <div 
-        className="grid gap-0" 
+        className="grid gap-0 w-full" 
         style={{ 
           display: 'grid',
-          gridTemplateColumns: `100px repeat(${steps}, 24px)`,
+          gridTemplateColumns: `80px repeat(${steps}, 1fr)`,
           boxSizing: 'border-box'
         }}
       >
@@ -57,8 +57,7 @@ export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying }
             className={cn(
               "h-10 border-b border-white/5 flex items-center justify-center text-[10px] font-mono transition-colors",
               i === currentStep ? "bg-primary/20 text-primary" : "bg-black/20 text-muted-foreground/40",
-              i % 4 === 0 && "border-l border-white/10",
-              "w-full min-w-[24px]"
+              i % 4 === 0 && "border-l border-white/10"
             )}
           >
             {i + 1}
@@ -86,7 +85,7 @@ export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying }
                   key={`${row.id}-${stepIndex}`}
                   onClick={() => onToggleStep(stepIndex, row.id as DrumInstrument)}
                   className={cn(
-                    "h-10 border-b border-r border-white/5 transition-all duration-75 relative focus:outline-none w-full min-w-[24px]",
+                    "h-10 border-b border-r border-white/5 transition-all duration-75 relative focus:outline-none",
                     isDownbeat && "border-l border-white/10",
                     isActive ? `${drumColor} shadow-[inset_0_0_8px_rgba(0,0,0,0.3)]` : "bg-[#222] hover:bg-[#2a2a2a]",
                     isCurrent && "after:absolute after:inset-0 after:bg-white/10 after:pointer-events-none"
