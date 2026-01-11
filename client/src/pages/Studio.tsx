@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import * as Tone from "tone";
-import { Download, Play, Save, Square, Music, Volume2, Shuffle, ListMusic, Plus, Trash2, Settings } from "lucide-react";
+import { Download, Play, Save, Square, Music, Volume2, Shuffle, ListMusic, Plus, Trash2, Settings, Usb } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import { usePatterns, useCreatePattern, useGeneratePattern, useExportMidi, usePattern } from "@/hooks/use-patterns";
 import { audioEngine, type DrumInstrument } from "@/lib/audio";
+import { midiHandler } from "@/lib/midi";
 import { PatternList } from "@/components/PatternList";
 import { Controls } from "@/components/Controls";
 import { SequencerGrid } from "@/components/SequencerGrid";
@@ -14,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest } from "@/lib/queryClient";
@@ -43,6 +45,11 @@ export default function Studio() {
   const [saveName, setSaveName] = useState("");
   const [isSaveOpen, setIsSaveOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [midiInputs, setMidiInputs] = useState<{ id: string; name: string }[]>([]);
+  const [midiOutputs, setMidiOutputs] = useState<{ id: string; name: string }[]>([]);
+  const [selectedMidiInput, setSelectedMidiInput] = useState<string | null>(null);
+  const [selectedMidiOutput, setSelectedMidiOutput] = useState<string | null>(null);
+  const [midiEnabled, setMidiEnabled] = useState(false);
   
   // New advanced features state
   const [complexity, setComplexity] = useState(50);
@@ -72,6 +79,23 @@ export default function Studio() {
     };
     window.addEventListener("click", initAudio, { once: true });
     return () => window.removeEventListener("click", initAudio);
+  }, []);
+
+  // --- MIDI Init ---
+  useEffect(() => {
+    const initMidi = async () => {
+      const success = await midiHandler.init();
+      if (success) {
+        setMidiEnabled(true);
+        setMidiInputs(midiHandler.getInputs());
+        setMidiOutputs(midiHandler.getOutputs());
+      }
+    };
+    initMidi();
+    
+    midiHandler.onNote((drum, velocity) => {
+      audioEngine.playDrum(drum, velocity);
+    });
   }, []);
 
   // --- Sync State when pattern selected ---
@@ -108,6 +132,7 @@ export default function Studio() {
       const hits = gridData.filter(g => g.step === step);
       hits.forEach(hit => {
         audioEngine.playDrum(hit.drum as DrumInstrument, hit.velocity, time);
+        midiHandler.sendNote(hit.drum as DrumInstrument, hit.velocity);
       });
 
     }, Array.from({ length: 32 }, (_, i) => i), "16n").start(0);
@@ -333,16 +358,90 @@ export default function Studio() {
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
-              <div className="flex flex-col items-center justify-center py-8 space-y-6">
+              <DialogHeader>
+                <DialogTitle className="sr-only">Settings</DialogTitle>
+              </DialogHeader>
+              <div className="flex flex-col items-center justify-center py-6 space-y-6">
                 <img 
                   src="/assets/Stranger_Amps_UI_0018_Logo_1768104907791.png" 
                   alt="Stranger Audio" 
-                  className="h-24 w-24 rounded-lg object-cover"
+                  className="h-20 w-20 rounded-lg object-cover"
                 />
-                <div className="text-center space-y-2">
-                  <h2 className="font-display text-2xl font-bold text-white">Stranger Drums</h2>
-                  <p className="text-muted-foreground">Created by Stranger Audio</p>
+                <div className="text-center space-y-1">
+                  <h2 className="font-display text-xl font-bold text-white">Stranger Drums</h2>
+                  <p className="text-muted-foreground text-sm">Created by Stranger Audio</p>
                   <p className="text-xs text-muted-foreground/60 font-mono">v2.0.0</p>
+                </div>
+              </div>
+              
+              <div className="border-t border-border pt-4 space-y-4">
+                <div className="flex items-center gap-2 text-sm font-mono text-muted-foreground">
+                  <Usb className="h-4 w-4" />
+                  <span>MIDI Configuration</span>
+                  {!midiEnabled && <span className="text-xs text-yellow-500">(Not supported)</span>}
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">MIDI Input</Label>
+                    <Select 
+                      value={selectedMidiInput || "none"} 
+                      onValueChange={(v) => {
+                        const val = v === "none" ? null : v;
+                        setSelectedMidiInput(val);
+                        midiHandler.setInput(val);
+                      }}
+                      disabled={!midiEnabled}
+                    >
+                      <SelectTrigger className="h-8 text-xs" data-testid="select-midi-input">
+                        <SelectValue placeholder="Select MIDI Input" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        {midiInputs.map(input => (
+                          <SelectItem key={input.id} value={input.id}>{input.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">MIDI Output</Label>
+                    <Select 
+                      value={selectedMidiOutput || "none"} 
+                      onValueChange={(v) => {
+                        const val = v === "none" ? null : v;
+                        setSelectedMidiOutput(val);
+                        midiHandler.setOutput(val);
+                      }}
+                      disabled={!midiEnabled}
+                    >
+                      <SelectTrigger className="h-8 text-xs" data-testid="select-midi-output">
+                        <SelectValue placeholder="Select MIDI Output" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        {midiOutputs.map(output => (
+                          <SelectItem key={output.id} value={output.id}>{output.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full text-xs"
+                    onClick={() => {
+                      setMidiInputs(midiHandler.getInputs());
+                      setMidiOutputs(midiHandler.getOutputs());
+                      toast({ title: "MIDI devices refreshed" });
+                    }}
+                    disabled={!midiEnabled}
+                    data-testid="button-refresh-midi"
+                  >
+                    Refresh MIDI Devices
+                  </Button>
                 </div>
               </div>
             </DialogContent>
