@@ -5,7 +5,7 @@ import { Download, Play, Save, Square, Music, Volume2, Shuffle, ListMusic, Plus,
 import { cn } from "@/lib/utils";
 
 import { usePatterns, useCreatePattern, useGeneratePattern, useExportMidi, usePattern } from "@/hooks/use-patterns";
-import { audioEngine, type DrumInstrument, type DrumKit } from "@/lib/audio";
+import { audioEngine, type DrumInstrument } from "@/lib/audio";
 import { PatternList } from "@/components/PatternList";
 import { Controls } from "@/components/Controls";
 import { SequencerGrid } from "@/components/SequencerGrid";
@@ -47,7 +47,6 @@ export default function Studio() {
   const [complexity, setComplexity] = useState(50);
   const [styleMix, setStyleMix] = useState(70);
   const [secondaryStyle, setSecondaryStyle] = useState("none");
-  const [kit, setKit] = useState<DrumKit>("modern_metal");
   
   // Song Mode / Arrangement state
   const [arrangement, setArrangement] = useState<ArrangementPattern[]>([]);
@@ -73,11 +72,6 @@ export default function Studio() {
     window.addEventListener("click", initAudio, { once: true });
     return () => window.removeEventListener("click", initAudio);
   }, []);
-
-  // --- Kit Change ---
-  useEffect(() => {
-    audioEngine.setKit(kit);
-  }, [kit]);
 
   // --- Sync State when pattern selected ---
   useEffect(() => {
@@ -349,7 +343,6 @@ export default function Studio() {
           complexity={complexity} setComplexity={setComplexity}
           styleMix={styleMix} setStyleMix={setStyleMix}
           secondaryStyle={secondaryStyle} setSecondaryStyle={setSecondaryStyle}
-          kit={kit} setKit={setKit}
         />
 
         {/* Tabs for Pattern / Arrangement */}
@@ -499,8 +492,6 @@ export default function Studio() {
         <div className="h-16 bg-card border-t border-border flex items-center justify-between px-8 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] z-10">
           <div className="flex items-center gap-4 text-xs font-mono text-muted-foreground">
              <span>STEPS: 32</span>
-             <span>•</span>
-             <span>KIT: {kit.replace("_", " ").toUpperCase()}</span>
              <span>•</span>
              <span>COMPLEXITY: {complexity}%</span>
           </div>

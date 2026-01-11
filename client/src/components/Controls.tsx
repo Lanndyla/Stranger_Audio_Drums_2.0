@@ -3,7 +3,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Loader2, Wand2, Blend } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { DRUM_KITS, type DrumKit } from "@/lib/audio";
 
 interface ControlsProps {
   bpm: number;
@@ -20,8 +19,6 @@ interface ControlsProps {
   setStyleMix: (mix: number) => void;
   secondaryStyle: string;
   setSecondaryStyle: (style: string) => void;
-  kit: DrumKit;
-  setKit: (kit: DrumKit) => void;
 }
 
 const STYLES = ["Djent", "Metal", "Rock", "Post-hardcore", "Pop", "Industrial", "Cyberpunk", "Jazz", "Funk"];
@@ -35,13 +32,12 @@ export function Controls({
   isGenerating,
   complexity, setComplexity,
   styleMix, setStyleMix,
-  secondaryStyle, setSecondaryStyle,
-  kit, setKit
+  secondaryStyle, setSecondaryStyle
 }: ControlsProps) {
   return (
     <div className="p-4 metal-surface border-b border-border/50">
       {/* Row 1: Main Controls */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
         {/* BPM Control */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
@@ -81,19 +77,6 @@ export function Controls({
             </SelectTrigger>
             <SelectContent>
               {TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Kit Selector */}
-        <div className="space-y-2">
-          <Label className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">Drum Kit</Label>
-          <Select value={kit} onValueChange={(v) => setKit(v as DrumKit)}>
-            <SelectTrigger className="h-9" data-testid="select-kit">
-              <SelectValue placeholder="Select Kit" />
-            </SelectTrigger>
-            <SelectContent>
-              {DRUM_KITS.map(k => <SelectItem key={k.id} value={k.id}>{k.label}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
