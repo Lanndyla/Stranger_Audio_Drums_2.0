@@ -171,8 +171,7 @@ export default function Studio() {
         payload.styleMix = styleMix;
       }
       
-      const res = await apiRequest("POST", "/api/patterns/generate", payload);
-      const data = await res.json();
+      const data = await generatePattern.mutateAsync(payload);
 
       setGridData(data.grid);
       setSaveName(data.suggestedName);
