@@ -89,6 +89,7 @@ export async function registerRoutes(
       - For Djent/Metal: use syncopated kicks, ghost notes on snare, and aggressive accents.
       - For Blast Beat: fast, intense, alternating kick/snare or unison.
       - For Intro: build-up or establishing groove.
+      - For Pop (Lady Gaga, Britney Spears, Maroon 5, Jonas Brothers): focus on a strong, steady kick on 1 and 3, consistent backbeat on 2 and 4, and clear, danceable hi-hat patterns.
       
       Ensure the JSON is valid and only return the JSON.`;
 
