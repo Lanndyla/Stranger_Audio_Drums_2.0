@@ -61,6 +61,7 @@ export default function Studio() {
   const [complexity, setComplexity] = useState(50);
   const [styleMix, setStyleMix] = useState(70);
   const [secondaryStyle, setSecondaryStyle] = useState("none");
+  const [swing, setSwing] = useState(0); // 0-100%, affects timing of off-beat notes
   
   // Song Mode / Arrangement state
   const [arrangement, setArrangement] = useState<ArrangementPattern[]>([]);
@@ -149,7 +150,17 @@ export default function Studio() {
   const startPlayback = async () => {
     await Tone.start();
     
+    // Calculate swing delay: swing affects every other 16th note (off-beats)
+    // At 100% swing, off-beats are delayed by 1/3 of a 16th note (triplet feel)
+    const sixteenthDuration = Tone.Time("16n").toSeconds();
+    const maxSwingDelay = sixteenthDuration / 3; // Maximum delay for triplet feel
+    const swingDelay = (swing / 100) * maxSwingDelay;
+    
     playbackRef.current = new Tone.Sequence((time, step) => {
+      // Apply swing to off-beat steps (1, 3, 5, 7, etc.)
+      const isOffBeat = step % 2 === 1;
+      const adjustedTime = isOffBeat ? time + swingDelay : time;
+      
       Tone.Draw.schedule(() => {
         setCurrentStep(step);
       }, time);
@@ -158,7 +169,7 @@ export default function Studio() {
       hits.forEach(hit => {
         const trackVel = trackVelocities[hit.drum] ?? 100;
         const adjustedVelocity = Math.floor((hit.velocity * trackVel) / 100);
-        audioEngine.playDrum(hit.drum as DrumInstrument, adjustedVelocity, time);
+        audioEngine.playDrum(hit.drum as DrumInstrument, adjustedVelocity, adjustedTime);
         midiHandler.sendNote(hit.drum as DrumInstrument, adjustedVelocity);
       });
 
@@ -191,6 +202,16 @@ export default function Studio() {
     }
     prevStepCount.current = stepCount;
   }, [stepCount, isPlaying]);
+  
+  // Restart playback when swing changes to apply new timing
+  const prevSwing = useRef(swing);
+  useEffect(() => {
+    if (prevSwing.current !== swing && isPlaying) {
+      stopPlayback();
+      startPlayback();
+    }
+    prevSwing.current = swing;
+  }, [swing, isPlaying]);
 
   // --- Event Handlers ---
 
@@ -568,6 +589,7 @@ export default function Studio() {
           complexity={complexity} setComplexity={setComplexity}
           styleMix={styleMix} setStyleMix={setStyleMix}
           secondaryStyle={secondaryStyle} setSecondaryStyle={setSecondaryStyle}
+          swing={swing} setSwing={setSwing}
         />
 
         {/* Tabs for Pattern / Arrangement */}

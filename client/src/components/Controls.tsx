@@ -19,6 +19,8 @@ interface ControlsProps {
   setStyleMix: (mix: number) => void;
   secondaryStyle: string;
   setSecondaryStyle: (style: string) => void;
+  swing: number;
+  setSwing: (swing: number) => void;
 }
 
 const STYLES = ["Djent", "Metal", "Rock", "Post-hardcore", "Pop", "Industrial", "Cyberpunk", "Jazz", "Funk"];
@@ -32,7 +34,8 @@ export function Controls({
   isGenerating,
   complexity, setComplexity,
   styleMix, setStyleMix,
-  secondaryStyle, setSecondaryStyle
+  secondaryStyle, setSecondaryStyle,
+  swing, setSwing
 }: ControlsProps) {
   return (
     <div className="p-4 metal-surface border-b border-border/50">
@@ -165,6 +168,23 @@ export function Controls({
               {secondaryStyle === "none" ? "—" : secondaryStyle}
             </span>
           </div>
+        </div>
+
+        {/* Swing Slider */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <Label className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">Swing</Label>
+            <span className="font-mono text-xs text-muted-foreground">{swing}%</span>
+          </div>
+          <Slider
+            value={[swing]}
+            onValueChange={(vals) => setSwing(vals[0])}
+            min={0}
+            max={100}
+            step={5}
+            className="w-full"
+            data-testid="slider-swing"
+          />
         </div>
       </div>
     </div>
