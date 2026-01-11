@@ -140,7 +140,7 @@ export function Controls({
         </div>
 
         {/* Style Mix Slider */}
-        <div className="space-y-2">
+        <div className="space-y-2 col-span-2">
           <div className="flex justify-between items-center">
             <Label className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest flex items-center gap-1">
               <Blend className="w-3 h-3" /> Mix Ratio
@@ -159,11 +159,7 @@ export function Controls({
             className="w-full"
             data-testid="slider-style-mix"
           />
-        </div>
-
-        {/* Mix Labels */}
-        <div className="flex items-end pb-1">
-          <div className="flex justify-between w-full text-[10px] font-mono">
+          <div className="flex justify-between w-full text-[10px] font-mono pt-1">
             <span className={styleMix > 50 ? "text-primary" : "text-muted-foreground"}>{style}</span>
             <span className="text-muted-foreground/50">|</span>
             <span className={styleMix <= 50 && secondaryStyle !== "none" ? "text-secondary" : "text-muted-foreground"}>

@@ -303,7 +303,7 @@ export default function Studio() {
       <aside className="w-64 border-r border-border bg-card/50 flex flex-col z-20 shadow-2xl">
         <div className="p-4 border-b border-border metal-surface">
           <div className="flex items-center gap-2 mb-1">
-            <img src="/assets/Stranger_Amps_UI_0018_Logo_1768104907791.png" alt="Stranger Drums" className="h-8 w-8 rounded object-cover" />
+            <img src="/assets/Stranger_Amps_UI_0018_Logo_1768104907791.png" alt="Stranger Drums" className="h-10 w-10 rounded object-cover" />
             <h1 className="font-display font-bold text-xl tracking-tighter text-white">
               Stranger <span className="text-primary">Drums</span>
             </h1>
