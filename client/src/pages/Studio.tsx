@@ -59,6 +59,12 @@ export default function Studio() {
   // Song Mode / Arrangement state
   const [arrangement, setArrangement] = useState<ArrangementPattern[]>([]);
   const [activeTab, setActiveTab] = useState("pattern");
+  
+  // Track velocity multipliers (per-track volume control)
+  const [trackVelocities, setTrackVelocities] = useState<Record<string, number>>({
+    kick: 100, snare: 100, hihat_closed: 100, hihat_open: 100,
+    tom_1: 100, tom_2: 100, crash: 100, ride: 100
+  });
 
   // --- Hooks ---
   const { toast } = useToast();
@@ -131,8 +137,10 @@ export default function Studio() {
 
       const hits = gridData.filter(g => g.step === step);
       hits.forEach(hit => {
-        audioEngine.playDrum(hit.drum as DrumInstrument, hit.velocity, time);
-        midiHandler.sendNote(hit.drum as DrumInstrument, hit.velocity);
+        const trackVel = trackVelocities[hit.drum] ?? 100;
+        const adjustedVelocity = Math.floor((hit.velocity * trackVel) / 100);
+        audioEngine.playDrum(hit.drum as DrumInstrument, adjustedVelocity, time);
+        midiHandler.sendNote(hit.drum as DrumInstrument, adjustedVelocity);
       });
 
     }, Array.from({ length: 32 }, (_, i) => i), "16n").start(0);
@@ -171,14 +179,37 @@ export default function Studio() {
   };
 
   const handleHumanize = () => {
-    setGridData(prev => prev.map(step => ({
-      ...step,
-      velocity: Math.max(40, Math.min(127, step.velocity + Math.floor(Math.random() * 30) - 15))
-    })));
+    setGridData(prev => {
+      const humanized = prev.map(step => ({
+        ...step,
+        velocity: Math.max(40, Math.min(127, step.velocity + Math.floor(Math.random() * 30) - 15))
+      }));
+      
+      // Add ghost notes on snare and hi-hat for more natural feel
+      const ghostNotes: GridStep[] = [];
+      const existingSteps = new Set(humanized.map(s => `${s.drum}-${s.step}`));
+      
+      for (let step = 0; step < 32; step++) {
+        // Add ghost snare notes (low velocity hits between main hits)
+        if (!existingSteps.has(`snare-${step}`) && Math.random() < 0.15) {
+          ghostNotes.push({ step, drum: "snare", velocity: Math.floor(Math.random() * 25) + 30 });
+        }
+        // Add ghost hi-hat notes
+        if (!existingSteps.has(`hihat_closed-${step}`) && Math.random() < 0.1) {
+          ghostNotes.push({ step, drum: "hihat_closed", velocity: Math.floor(Math.random() * 20) + 35 });
+        }
+      }
+      
+      return [...humanized, ...ghostNotes];
+    });
     toast({
       title: "Humanized",
-      description: "Velocity variations applied for a more natural feel.",
+      description: "Velocity variations and ghost notes applied for a natural feel.",
     });
+  };
+  
+  const handleTrackVelocityChange = (drum: string, velocity: number) => {
+    setTrackVelocities(prev => ({ ...prev, [drum]: velocity }));
   };
 
   const handleGenerate = async () => {
@@ -534,6 +565,8 @@ export default function Studio() {
                     currentStep={currentStep}
                     onToggleStep={handleToggleStep}
                     isPlaying={isPlaying}
+                    trackVelocities={trackVelocities}
+                    onTrackVelocityChange={handleTrackVelocityChange}
                   />
                 </div>
               </div>

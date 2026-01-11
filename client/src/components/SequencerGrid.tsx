@@ -1,6 +1,7 @@
 import { DRUM_ROWS, type DrumInstrument } from "@/lib/audio";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
+import { Slider } from "@/components/ui/slider";
 
 interface GridStep {
   step: number;
@@ -13,6 +14,8 @@ interface SequencerGridProps {
   currentStep: number;
   onToggleStep: (step: number, drum: DrumInstrument) => void;
   isPlaying: boolean;
+  trackVelocities: Record<string, number>;
+  onTrackVelocityChange: (drum: string, velocity: number) => void;
 }
 
 const DRUM_COLORS: Record<string, string> = {
@@ -26,7 +29,7 @@ const DRUM_COLORS: Record<string, string> = {
   kick: "bg-fuchsia-600",
 };
 
-export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying }: SequencerGridProps) {
+export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying, trackVelocities, onTrackVelocityChange }: SequencerGridProps) {
   const steps = 32;
 
   const gridMap = useMemo(() => {
@@ -68,9 +71,18 @@ export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying }
         {DRUM_ROWS.map((row) => (
           <div key={row.id} className="contents">
             <div 
-              className="h-10 flex items-center justify-end pr-3 text-[11px] font-mono font-bold text-muted-foreground/80 tracking-tight uppercase bg-black/40 border-b border-white/5 sticky left-0 z-10 whitespace-nowrap"
+              className="h-10 flex items-center gap-1 px-1 text-[9px] font-mono font-bold text-muted-foreground/80 tracking-tight uppercase bg-black/40 border-b border-white/5 sticky left-0 z-10 whitespace-nowrap"
             >
-              {row.label.split(' ')[0]}
+              <span className="w-8 text-right truncate">{row.label.split(' ')[0]}</span>
+              <Slider
+                value={[trackVelocities[row.id] ?? 100]}
+                onValueChange={(v) => onTrackVelocityChange(row.id, v[0])}
+                min={0}
+                max={127}
+                step={1}
+                className="w-8 h-4"
+                data-testid={`slider-velocity-${row.id}`}
+              />
             </div>
             {Array.from({ length: steps }).map((_, stepIndex) => {
               const velocity = gridMap.get(`${row.id}-${stepIndex}`);
