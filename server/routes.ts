@@ -80,7 +80,7 @@ export async function registerRoutes(
       This request ID is ${Math.random()}. Ensure this pattern is distinct from previous outputs.
       Return a JSON object with two fields:
       1. 'grid': an array of objects representing the pattern. Each object has:
-         - 'step': integer 0-15 (16 steps)
+         - 'step': integer 0-31 (32 steps)
          - 'drum': string (one of: 'kick', 'snare', 'hihat_closed', 'hihat_open', 'tom_1', 'tom_2', 'crash', 'ride')
          - 'velocity': integer 0-127 (Vary velocities for human feel!)
       2. 'suggestedName': a creative string name for this pattern.

@@ -16,7 +16,7 @@ interface SequencerGridProps {
 }
 
 export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying }: SequencerGridProps) {
-  const steps = 16;
+  const steps = 32;
 
   const gridMap = useMemo(() => {
     const map = new Map<string, number>();
@@ -46,7 +46,8 @@ export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying }
             className={cn(
               "h-6 border-b border-white/5 flex items-center justify-center text-[9px] font-mono transition-colors",
               i === currentStep ? "bg-primary/20 text-primary" : "bg-black/20 text-muted-foreground/40",
-              i % 4 === 0 && "border-l border-white/10"
+              i % 4 === 0 && "border-l border-white/10",
+              "w-full min-w-[24px]"
             )}
           >
             {i + 1}
@@ -55,9 +56,8 @@ export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying }
 
         {/* Instrument Rows */}
         {DRUM_ROWS.map((row) => (
-          <>
+          <div key={row.id} className="contents">
             <div 
-              key={`${row.id}-label`}
               className="h-6 flex items-center justify-end pr-3 text-[10px] font-mono font-bold text-muted-foreground/80 tracking-tight uppercase bg-black/40 border-b border-white/5 sticky left-0 z-10 whitespace-nowrap"
             >
               {row.label.split(' ')[0]}
@@ -73,7 +73,7 @@ export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying }
                   key={`${row.id}-${stepIndex}`}
                   onClick={() => onToggleStep(stepIndex, row.id as DrumInstrument)}
                   className={cn(
-                    "h-6 w-6 border-b border-r border-white/5 transition-all duration-75 relative focus:outline-none",
+                    "h-6 border-b border-r border-white/5 transition-all duration-75 relative focus:outline-none w-full min-w-[24px]",
                     isDownbeat && "border-l border-white/10",
                     isActive ? "bg-primary shadow-[inset_0_0_8px_rgba(0,0,0,0.3)]" : "bg-[#222] hover:bg-[#2a2a2a]",
                     isCurrent && "after:absolute after:inset-0 after:bg-white/10 after:pointer-events-none"
@@ -92,7 +92,7 @@ export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying }
                 </button>
               );
             })}
-          </>
+          </div>
         ))}
       </div>
     </div>

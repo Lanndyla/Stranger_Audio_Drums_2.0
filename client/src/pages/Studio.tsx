@@ -99,7 +99,7 @@ export default function Studio() {
         audioEngine.playDrum(hit.drum as DrumInstrument, hit.velocity, time);
       });
 
-    }, steps, "16n").start(0);
+    }, Array.from({ length: 32 }, (_, i) => i), "16n").start(0);
 
     Tone.Transport.start();
     setIsPlaying(true);
