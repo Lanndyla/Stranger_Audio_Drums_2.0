@@ -328,8 +328,8 @@ export default function Studio() {
           <span>v2.0.0</span>
           <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7" data-testid="button-settings">
-                <Settings className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className="h-6 w-6" data-testid="button-settings">
+                <Settings className="h-3 w-3" />
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
