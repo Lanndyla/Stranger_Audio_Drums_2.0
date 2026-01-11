@@ -225,22 +225,32 @@ export async function registerRoutes(
         }
       });
 
-      // 16th notes
-      steps.forEach((notesInStep) => {
+      // 16th notes - track accumulated wait time for rests
+      let waitSteps = 0;
+      
+      steps.forEach((notesInStep, stepIndex) => {
         if (notesInStep.length > 0) {
           const pitches = notesInStep.map((n: any) => drumMap[n.drum]).filter(Boolean);
           if (pitches.length > 0) {
-            track.addEvent(new MidiWriter.NoteEvent({
+            const eventOptions: any = {
               pitch: pitches,
               duration: '16',
-              velocity: notesInStep[0].velocity || 100 // Use velocity of first note or default
-            }));
+              velocity: notesInStep[0].velocity || 100,
+              channel: 10 // Drum channel
+            };
+            
+            // Add wait if there were rests before this note
+            if (waitSteps > 0) {
+              eventOptions.wait = 'T' + (waitSteps * 32); // 32 ticks per 16th note at 128 PPQ
+              waitSteps = 0;
+            }
+            
+            track.addEvent(new MidiWriter.NoteEvent(eventOptions));
           } else {
-             track.addEvent(new MidiWriter.NoteEvent({pitch: [], duration: '16', wait: true}));
+            waitSteps++;
           }
         } else {
-          // Rest
-           track.addEvent(new MidiWriter.NoteEvent({pitch: [], duration: '16', wait: true}));
+          waitSteps++;
         }
       });
 
