@@ -15,6 +15,17 @@ interface SequencerGridProps {
   isPlaying: boolean;
 }
 
+const DRUM_COLORS: Record<string, string> = {
+  crash: "bg-pink-500",
+  ride: "bg-violet-500",
+  hihat_open: "bg-blue-400",
+  hihat_closed: "bg-teal-500",
+  tom_1: "bg-purple-600",
+  tom_2: "bg-indigo-500",
+  snare: "bg-red-500",
+  kick: "bg-fuchsia-600",
+};
+
 export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying }: SequencerGridProps) {
   const steps = 32;
 
@@ -68,6 +79,8 @@ export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying }
               const isCurrent = currentStep === stepIndex;
               const isDownbeat = stepIndex % 4 === 0;
 
+              const drumColor = DRUM_COLORS[row.id] || "bg-primary";
+
               return (
                 <button
                   key={`${row.id}-${stepIndex}`}
@@ -75,7 +88,7 @@ export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying }
                   className={cn(
                     "h-10 border-b border-r border-white/5 transition-all duration-75 relative focus:outline-none w-full min-w-[24px]",
                     isDownbeat && "border-l border-white/10",
-                    isActive ? "bg-primary shadow-[inset_0_0_8px_rgba(0,0,0,0.3)]" : "bg-[#222] hover:bg-[#2a2a2a]",
+                    isActive ? `${drumColor} shadow-[inset_0_0_8px_rgba(0,0,0,0.3)]` : "bg-[#222] hover:bg-[#2a2a2a]",
                     isCurrent && "after:absolute after:inset-0 after:bg-white/10 after:pointer-events-none"
                   )}
                   data-testid={`step-${row.id}-${stepIndex}`}
@@ -87,7 +100,7 @@ export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying }
                     />
                   )}
                   {isCurrent && (
-                    <div className="absolute inset-0 bg-primary/20 pointer-events-none animate-pulse" />
+                    <div className="absolute inset-0 bg-white/20 pointer-events-none animate-pulse" />
                   )}
                 </button>
               );
