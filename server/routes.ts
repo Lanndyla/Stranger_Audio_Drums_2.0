@@ -118,6 +118,17 @@ export async function registerRoutes(
         * Add crash on step 0 and step 16 for impact
         * This creates the signature "wall of sound" blast beat effect
         * Think Slayer, Cannibal Corpse, Nile, Origin - RELENTLESS speed and density
+      - For Breakdown: THIS IS CRITICAL - Metal breakdowns are heavy, rhythmic patterns that lock with guitar chugs:
+        * Half-time or slow, crushing feel - kicks should emphasize the "chug" rhythm
+        * Common pattern: Kick on beat 1, then syncopated kicks that follow guitar palm-muted chugs
+        * Snare on beat 3 (half-time feel) or on 2 and 4 for standard time
+        * China cymbal or crash accents on the first beat of each phrase (steps 0, 8, 16, 24)
+        * Open hi-hat or ride bell for sustained tension
+        * Add tom fills between phrases for impact (steps 14-15, 30-31)
+        * Think Lamb of God, Gojira, Meshuggah, Parkway Drive, Knocked Loose, Architects
+        * Kick patterns should be SYNCOPATED and match typical djent/metal guitar rhythms like: 0-0-0--0-0--0-0-0 pattern
+        * Velocities: Kicks 100-127 for power, snares 110-127 for crack, cymbals 90-110
+        * NOT constant 16th notes - use space and syncopation for maximum heaviness
       - For Intro: build-up or establishing groove.
       - For Pop (Lady Gaga, Britney Spears, Maroon 5, Jonas Brothers): focus on a strong, steady kick on 1 and 3, consistent backbeat on 2 and 4, and clear, danceable hi-hat patterns.
       - For Jazz: swung feel, ride cymbal emphasis, ghost notes on snare, subtle kick patterns.
