@@ -64,7 +64,7 @@ export const api = {
       input: z.object({
         style: z.string(),
         bpm: z.number().min(60).max(240),
-        type: z.enum(["Groove", "Fill", "Breakdown", "Intro", "Blast Beat"]),
+        type: z.enum(["Groove", "Fill", "Breakdown"]),
       }),
       responses: {
         200: z.object({
