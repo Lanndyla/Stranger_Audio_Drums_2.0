@@ -31,6 +31,8 @@ interface ArrangementPattern {
   name: string;
   bpm: number;
   grid: GridStep[];
+  timeSignature: string;
+  stepCount: number;
 }
 
 export default function Studio() {
@@ -38,6 +40,7 @@ export default function Studio() {
   const [bpm, setBpm] = useState(140);
   const [style, setStyle] = useState("Djent");
   const [type, setType] = useState("Groove");
+  const [timeSignature, setTimeSignature] = useState("4/4");
   const [gridData, setGridData] = useState<GridStep[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentStep, setCurrentStep] = useState(-1);
@@ -65,6 +68,19 @@ export default function Studio() {
     kick: 100, snare: 100, hihat_closed: 100, hihat_open: 100,
     tom_1: 100, tom_2: 100, crash: 100, ride: 100, china: 100
   }));
+  
+  // Calculate steps based on time signature (2 bars worth of 16th notes)
+  const getStepCount = (ts: string): number => {
+    const [beats, noteValue] = ts.split('/').map(Number);
+    if (noteValue === 8) {
+      // For x/8 time signatures: each beat is an 8th note, so 2 16th notes per beat
+      return beats * 2 * 2; // 2 bars
+    }
+    // For x/4 time signatures: each beat is a quarter note, so 4 16th notes per beat
+    return beats * 4 * 2; // 2 bars
+  };
+  
+  const stepCount = getStepCount(timeSignature);
 
   // --- Hooks ---
   const { toast } = useToast();
@@ -143,7 +159,7 @@ export default function Studio() {
         midiHandler.sendNote(hit.drum as DrumInstrument, adjustedVelocity);
       });
 
-    }, Array.from({ length: 32 }, (_, i) => i), "16n").start(0);
+    }, Array.from({ length: stepCount }, (_, i) => i), "16n").start(0);
 
     Tone.Transport.start();
     setIsPlaying(true);
@@ -163,6 +179,15 @@ export default function Studio() {
     if (isPlaying) stopPlayback();
     else startPlayback();
   };
+  
+  // Stop playback when time signature changes to avoid stale sequence
+  const prevStepCount = useRef(stepCount);
+  useEffect(() => {
+    if (prevStepCount.current !== stepCount && isPlaying) {
+      stopPlayback();
+    }
+    prevStepCount.current = stepCount;
+  }, [stepCount, isPlaying]);
 
   // --- Event Handlers ---
 
@@ -189,7 +214,7 @@ export default function Studio() {
       const ghostNotes: GridStep[] = [];
       const existingSteps = new Set(humanized.map(s => `${s.drum}-${s.step}`));
       
-      for (let step = 0; step < 32; step++) {
+      for (let step = 0; step < stepCount; step++) {
         // Add ghost snare notes (low velocity hits between main hits)
         if (!existingSteps.has(`snare-${step}`) && Math.random() < 0.15) {
           ghostNotes.push({ step, drum: "snare", velocity: Math.floor(Math.random() * 25) + 30 });
@@ -221,6 +246,8 @@ export default function Studio() {
         style, 
         type,
         complexity,
+        timeSignature,
+        stepCount,
       };
       
       if (secondaryStyle !== "none") {
@@ -273,7 +300,7 @@ export default function Studio() {
 
   const handleExport = async () => {
     try {
-      const blob = await exportMidi.mutateAsync({ bpm, grid: gridData });
+      const blob = await exportMidi.mutateAsync({ bpm, grid: gridData, timeSignature, stepCount });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -298,7 +325,11 @@ export default function Studio() {
     try {
       const res = await apiRequest("POST", "/api/patterns/export-arrangement", {
         bpm,
-        patterns: arrangement.map(p => p.grid)
+        patterns: arrangement.map(p => ({
+          grid: p.grid,
+          timeSignature: p.timeSignature,
+          stepCount: p.stepCount
+        }))
       });
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
@@ -333,7 +364,9 @@ export default function Studio() {
       id: Date.now().toString(),
       name: saveName || `Pattern ${arrangement.length + 1}`,
       bpm,
-      grid: [...gridData]
+      grid: [...gridData],
+      timeSignature,
+      stepCount
     };
     
     setArrangement(prev => [...prev, newPattern]);
@@ -487,6 +520,7 @@ export default function Studio() {
           bpm={bpm} setBpm={setBpm}
           style={style} setStyle={setStyle}
           type={type} setType={setType}
+          timeSignature={timeSignature} setTimeSignature={setTimeSignature}
           onGenerate={handleGenerate}
           isGenerating={generatePattern.isPending}
           complexity={complexity} setComplexity={setComplexity}
@@ -567,6 +601,8 @@ export default function Studio() {
                     isPlaying={isPlaying}
                     trackVelocities={trackVelocities}
                     onTrackVelocityChange={handleTrackVelocityChange}
+                    stepCount={stepCount}
+                    timeSignature={timeSignature}
                   />
                 </div>
               </div>

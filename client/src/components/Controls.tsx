@@ -11,6 +11,8 @@ interface ControlsProps {
   setStyle: (style: string) => void;
   type: string;
   setType: (type: string) => void;
+  timeSignature: string;
+  setTimeSignature: (ts: string) => void;
   onGenerate: () => void;
   isGenerating: boolean;
   complexity: number;
@@ -23,11 +25,13 @@ interface ControlsProps {
 
 const STYLES = ["Djent", "Metal", "Rock", "Post-hardcore", "Pop", "Industrial", "Cyberpunk", "Jazz", "Funk"];
 const TYPES = ["Groove", "Fill", "Breakdown", "Intro", "Blast Beat"];
+const TIME_SIGNATURES = ["4/4", "3/4", "5/4", "6/8", "7/8", "5/8", "9/8", "12/8"];
 
 export function Controls({ 
   bpm, setBpm, 
   style, setStyle, 
   type, setType, 
+  timeSignature, setTimeSignature,
   onGenerate, 
   isGenerating,
   complexity, setComplexity,
@@ -80,6 +84,25 @@ export function Controls({
             </SelectContent>
           </Select>
         </div>
+      </div>
+
+      {/* Row 2: Time Signature + Generate */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+        {/* Time Signature Selector */}
+        <div className="space-y-2">
+          <Label className="font-mono text-[10px] text-accent/80 uppercase tracking-widest">Time Signature</Label>
+          <Select value={timeSignature} onValueChange={setTimeSignature}>
+            <SelectTrigger className="h-9 border-accent/30 focus:ring-accent/50" data-testid="select-time-signature">
+              <SelectValue placeholder="Time Sig" />
+            </SelectTrigger>
+            <SelectContent>
+              {TIME_SIGNATURES.map(ts => <SelectItem key={ts} value={ts}>{ts}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div /> {/* Spacer */}
+        <div /> {/* Spacer */}
 
         {/* Generate Button */}
         <div className="space-y-2">

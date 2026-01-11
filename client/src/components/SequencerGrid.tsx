@@ -16,6 +16,8 @@ interface SequencerGridProps {
   isPlaying: boolean;
   trackVelocities: Record<string, number>;
   onTrackVelocityChange: (drum: string, velocity: number) => void;
+  stepCount: number;
+  timeSignature: string;
 }
 
 const DRUM_COLORS: Record<string, string> = {
@@ -29,8 +31,15 @@ const DRUM_COLORS: Record<string, string> = {
   kick: "bg-fuchsia-600",
 };
 
-export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying, trackVelocities, onTrackVelocityChange }: SequencerGridProps) {
-  const steps = 32;
+export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying, trackVelocities, onTrackVelocityChange, stepCount, timeSignature }: SequencerGridProps) {
+  const steps = stepCount;
+  
+  // Calculate beat grouping based on time signature
+  const [beatsPerBar, noteValue] = timeSignature.split('/').map(Number);
+  // For compound meters (6/8, 9/8, 12/8), group in 3s (dotted quarter = 6 16th notes)
+  // For simple meters, group by beat (4 16ths for quarter note, 2 for eighth)
+  const isCompoundMeter = noteValue === 8 && (beatsPerBar === 6 || beatsPerBar === 9 || beatsPerBar === 12);
+  const stepsPerBeat = isCompoundMeter ? 6 : (noteValue === 8 ? 2 : 4);
 
   const gridMap = useMemo(() => {
     const map = new Map<string, number>();
@@ -60,7 +69,7 @@ export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying, 
             className={cn(
               "h-10 border-b border-white/5 flex items-center justify-center text-[10px] font-mono transition-colors",
               i === currentStep ? "bg-primary/20 text-primary" : "bg-black/20 text-muted-foreground/40",
-              i % 4 === 0 && "border-l border-white/10"
+              i % stepsPerBeat === 0 && "border-l border-white/10"
             )}
           >
             {i + 1}
@@ -88,7 +97,7 @@ export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying, 
               const velocity = gridMap.get(`${row.id}-${stepIndex}`);
               const isActive = velocity !== undefined;
               const isCurrent = currentStep === stepIndex;
-              const isDownbeat = stepIndex % 4 === 0;
+              const isDownbeat = stepIndex % stepsPerBeat === 0;
 
               const drumColor = DRUM_COLORS[row.id] || "bg-primary";
 

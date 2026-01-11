@@ -74,7 +74,7 @@ export async function registerRoutes(
   app.post(api.patterns.generate.path, async (req, res) => {
     try {
       const { style, bpm, type } = api.patterns.generate.input.parse(req.body);
-      const { complexity = 50, secondaryStyle, styleMix = 70 } = req.body;
+      const { complexity = 50, secondaryStyle, styleMix = 70, timeSignature = "4/4", stepCount = 32 } = req.body;
 
       let styleDescription = style;
       if (secondaryStyle && secondaryStyle !== "none") {
@@ -85,18 +85,36 @@ export async function registerRoutes(
                             complexity < 60 ? "moderately complex" : 
                             complexity < 80 ? "complex with many notes" : "extremely dense and intricate";
 
+      // Parse time signature for the AI prompt
+      const [beatsPerBar, noteValue] = timeSignature.split('/').map(Number);
+      const timeSignatureDesc = timeSignature === "4/4" ? "standard 4/4 time" :
+                                timeSignature === "3/4" ? "3/4 waltz time" :
+                                timeSignature === "5/4" ? "5/4 odd time (like 'Take Five' or Tool)" :
+                                timeSignature === "6/8" ? "6/8 compound time" :
+                                timeSignature === "7/8" ? "7/8 progressive odd time" :
+                                timeSignature === "5/8" ? "5/8 asymmetric time" :
+                                timeSignature === "9/8" ? "9/8 compound time" :
+                                timeSignature === "12/8" ? "12/8 blues/shuffle feel" : `${timeSignature} time`;
+
       const prompt = `Generate a UNIQUE and creative drum pattern for ${styleDescription} song. 
       BPM: ${bpm}. Type: ${type}. Complexity: ${complexityDesc} (${complexity}% density).
+      TIME SIGNATURE: ${timeSignature} (${timeSignatureDesc}). TOTAL STEPS: ${stepCount} (this is 2 bars worth of 16th notes in ${timeSignature}).
       This request ID is ${Math.random()}. Ensure this pattern is distinct from previous outputs.
       
       Return a JSON object with two fields:
       1. 'grid': an array of objects representing the pattern. Each object has:
-         - 'step': integer 0-31 (32 steps)
+         - 'step': integer 0-${stepCount - 1} (${stepCount} steps total for 2 bars in ${timeSignature})
          - 'drum': string (one of: 'kick', 'snare', 'hihat_closed', 'hihat_open', 'tom_1', 'tom_2', 'crash', 'ride')
          - 'velocity': integer 0-127 (Vary velocities for human feel!)
       2. 'suggestedName': a creative string name for this pattern.
       
-      Complexity guide: At ${complexity}% complexity, include approximately ${Math.floor((complexity / 100) * 80)} notes total.
+      IMPORTANT: The pattern has ${stepCount} total steps (0-${stepCount - 1}). In ${timeSignature} time:
+      - Each bar has ${beatsPerBar} beats
+      - Each beat subdivides into ${noteValue === 8 ? 2 : 4} 16th notes
+      - Pattern spans 2 full bars
+      - Place kick and snare hits according to the ${timeSignature} feel
+      
+      Complexity guide: At ${complexity}% complexity, include approximately ${Math.floor((complexity / 100) * (stepCount * 2.5))} notes total.
       
       Make it realistic for the genre(s). 
       - For Djent: Create polyrhythmic patterns inspired by Meshuggah, Periphery, TesseracT, Animals as Leaders, Monuments, Vildhjarta, After the Burial, Veil of Maya, Northlane, and The Contortionist. Key characteristics:
@@ -164,7 +182,6 @@ export async function registerRoutes(
     try {
       const { bpm, patterns } = req.body;
       
-      const tracks: MidiWriter.Track[] = [];
       const mainTrack = new MidiWriter.Track();
       mainTrack.addEvent(new MidiWriter.ProgramChangeEvent({ instrument: 1 }));
       mainTrack.setTempo(bpm);
@@ -182,12 +199,24 @@ export async function registerRoutes(
 
       // Process each pattern in sequence using wait accumulation
       let waitSteps = 0;
+      let currentTimeSignature = "";
       
-      patterns.forEach((grid: any[], patternIndex: number) => {
-        // Group by step
-        const steps = new Array(32).fill(null).map(() => [] as any[]);
+      patterns.forEach((pattern: { grid: any[]; timeSignature?: string; stepCount?: number }, patternIndex: number) => {
+        const patternTimeSignature = pattern.timeSignature || "4/4";
+        const patternStepCount = pattern.stepCount || 32;
+        const grid = pattern.grid || [];
+        
+        // Add time signature meta event if it changed
+        if (patternTimeSignature !== currentTimeSignature) {
+          const [beatsPerBar, noteValue] = patternTimeSignature.split('/').map(Number);
+          mainTrack.setTimeSignature(beatsPerBar, noteValue, 24, 8);
+          currentTimeSignature = patternTimeSignature;
+        }
+        
+        // Group by step using pattern's stepCount
+        const steps = new Array(patternStepCount).fill(null).map(() => [] as any[]);
         grid.forEach((note: any) => {
-          if (note.step >= 0 && note.step < 32) {
+          if (note.step >= 0 && note.step < patternStepCount) {
             steps[note.step].push(note);
           }
         });
@@ -235,11 +264,14 @@ export async function registerRoutes(
   // MIDI Export Route
   app.post(api.patterns.exportMidi.path, async (req, res) => {
     try {
-      const { bpm, grid } = req.body;
+      const { bpm, grid, timeSignature = "4/4", stepCount = 32 } = req.body;
+      
+      const [beatsPerBar, noteValue] = timeSignature.split('/').map(Number);
       
       const track = new MidiWriter.Track();
       track.addEvent(new MidiWriter.ProgramChangeEvent({ instrument: 1 }));
       track.setTempo(bpm);
+      track.setTimeSignature(beatsPerBar, noteValue, 24, 8);
 
       // Map drums to MIDI notes (General MIDI Standard)
       const drumMap: Record<string, number> = {
@@ -253,11 +285,11 @@ export async function registerRoutes(
         'ride': 51
       };
 
-      // Group by step to handle simultaneous notes (32 steps)
-      const steps = new Array(32).fill(null).map(() => [] as any[]);
+      // Group by step to handle simultaneous notes
+      const steps = new Array(stepCount).fill(null).map(() => [] as any[]);
       
       grid.forEach((note: any) => {
-        if (note.step >= 0 && note.step < 32) {
+        if (note.step >= 0 && note.step < stepCount) {
           steps[note.step].push(note);
         }
       });

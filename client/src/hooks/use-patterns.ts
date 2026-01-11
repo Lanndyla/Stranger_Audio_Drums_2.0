@@ -102,7 +102,7 @@ export function useGeneratePattern() {
 // POST /api/patterns/export-midi
 export function useExportMidi() {
   return useMutation({
-    mutationFn: async (data: { bpm: number; grid: any[] }) => {
+    mutationFn: async (data: { bpm: number; grid: any[]; timeSignature?: string; stepCount?: number }) => {
       const res = await fetch(api.patterns.exportMidi.path, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
