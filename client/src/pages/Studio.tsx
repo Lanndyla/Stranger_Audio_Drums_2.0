@@ -261,25 +261,28 @@ export default function Studio() {
         <div className="flex-1 p-6 overflow-y-auto bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-[#0a0a0a] to-black">
           <div className="metal-surface rounded-lg p-1 border border-white/5 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-secondary to-primary opacity-50" />
-            <div className="bg-black/40 rounded p-6 backdrop-blur-sm">
-              <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center gap-4">
-                  <h2 className="text-lg font-bold text-white/80 font-display tracking-widest flex items-center gap-2">
-                    <Volume2 className="text-primary w-5 h-5" />
-                    SEQUENCE GRID
+            <div className="bg-black/60 rounded p-4 backdrop-blur-md border border-white/5 shadow-inner">
+              <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-sm font-bold text-white/70 font-display tracking-[0.2em] flex items-center gap-2">
+                    <Volume2 className="text-primary w-4 h-4" />
+                    STEP SEQUENCER
                   </h2>
-                  <div className="h-px w-20 bg-white/10" />
-                  <span className="font-mono text-xs text-primary/60">{saveName || "UNSAVED_PATTERN"}</span>
+                  <div className="h-px w-12 bg-white/10" />
+                  <span className="font-mono text-[10px] text-primary/50 tracking-widest">{saveName || "UNTITLED_PRJ"}</span>
                 </div>
                 
                 <div className="flex gap-2">
                   <Button 
                     variant={isPlaying ? "destructive" : "default"} 
-                    size="lg"
-                    className={`w-32 shadow-lg transition-all ${isPlaying ? 'animate-pulse' : ''}`}
+                    size="sm"
+                    className={cn(
+                      "h-8 px-6 font-mono font-bold tracking-widest transition-all",
+                      isPlaying && "animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.4)]"
+                    )}
                     onClick={togglePlayback}
                   >
-                    {isPlaying ? <Square className="fill-current mr-2 w-4 h-4" /> : <Play className="fill-current mr-2 w-4 h-4" />}
+                    {isPlaying ? <Square className="fill-current mr-2 w-3 h-3" /> : <Play className="fill-current mr-2 w-3 h-3" />}
                     {isPlaying ? "STOP" : "PLAY"}
                   </Button>
                 </div>
