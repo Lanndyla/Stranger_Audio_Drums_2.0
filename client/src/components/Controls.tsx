@@ -82,25 +82,28 @@ export function Controls({
         </div>
 
         {/* Generate Button */}
-        <Button 
-          onClick={onGenerate} 
-          disabled={isGenerating}
-          className="h-full min-h-[60px] relative overflow-hidden group bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-white shadow-[0_0_20px_rgba(0,243,255,0.3)] border-0"
-          data-testid="button-generate"
-        >
-          {isGenerating ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              SYNTHESIZING...
-            </>
-          ) : (
-            <>
-              <Wand2 className="mr-2 h-4 w-4" />
-              GENERATE
-            </>
-          )}
-          <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent z-10" />
-        </Button>
+        <div className="space-y-2">
+          <Label className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest opacity-0">Action</Label>
+          <Button 
+            onClick={onGenerate} 
+            disabled={isGenerating}
+            className="w-full h-9 relative overflow-hidden group bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-white shadow-[0_0_20px_rgba(0,243,255,0.3)] border-0"
+            data-testid="button-generate"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Wand2 className="mr-2 h-4 w-4" />
+                GENERATE
+              </>
+            )}
+            <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent z-10" />
+          </Button>
+        </div>
       </div>
 
       {/* Row 2: Advanced Controls */}
