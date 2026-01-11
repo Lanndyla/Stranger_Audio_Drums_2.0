@@ -303,11 +303,9 @@ export default function Studio() {
       <aside className="w-64 border-r border-border bg-card/50 flex flex-col z-20 shadow-2xl">
         <div className="p-4 border-b border-border metal-surface">
           <div className="flex items-center gap-2 mb-1">
-            <div className="h-8 w-8 rounded bg-primary flex items-center justify-center text-black font-bold font-display text-lg">
-              AI
-            </div>
+            <img src="/assets/Stranger_Amps_UI_0018_Logo_1768104907791.png" alt="Stranger Drums" className="h-8 w-8 rounded object-cover" />
             <h1 className="font-display font-bold text-xl tracking-tighter text-white">
-              DRUMGEN<span className="text-primary">.SYS</span>
+              Stranger <span className="text-primary">Drums</span>
             </h1>
           </div>
           <p className="text-[10px] text-muted-foreground font-mono ml-10">NEURAL RHYTHM ENGINE v2.0</p>
