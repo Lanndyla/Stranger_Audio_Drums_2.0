@@ -67,7 +67,7 @@ const KIT_SETTINGS: Record<DrumKit, {
 };
 
 class AudioEngine {
-  private instruments: Record<DrumInstrument, Tone.Instrument<any> | Tone.MembraneSynth | Tone.NoiseSynth | Tone.MetalSynth>;
+  private instruments: Record<DrumInstrument, Tone.MembraneSynth | Tone.NoiseSynth | Tone.MetalSynth>;
   private isInitialized = false;
   private currentKit: DrumKit = "modern_metal";
   private reverb: Tone.Reverb | null = null;
@@ -123,18 +123,18 @@ class AudioEngine {
     // HiHats: Metal Synth
     const hihatDist = new Tone.Distortion(0.05).connect(this.compressor!);
     this.instruments.hihat_closed = new Tone.MetalSynth({
-      frequency: settings.hihatFreq, 
       envelope: { attack: 0.001, decay: 0.1, release: 0.01 },
       harmonicity: 5.1, modulationIndex: 32, resonance: 4000, octaves: 1.5
     }).connect(hihatDist);
-    this.instruments.hihat_closed.volume.value = -15;
+    (this.instruments.hihat_closed as Tone.MetalSynth).frequency.value = settings.hihatFreq;
+    this.instruments.hihat_closed.volume.value = -12;
 
     this.instruments.hihat_open = new Tone.MetalSynth({
-      frequency: settings.hihatFreq, 
       envelope: { attack: 0.001, decay: 0.5, release: 0.1 },
       harmonicity: 5.1, modulationIndex: 32, resonance: 4000, octaves: 1.5
     }).connect(hihatDist);
-    this.instruments.hihat_open.volume.value = -15;
+    (this.instruments.hihat_open as Tone.MetalSynth).frequency.value = settings.hihatFreq;
+    this.instruments.hihat_open.volume.value = -12;
 
     // Toms
     this.instruments.tom_1 = new Tone.MembraneSynth({
@@ -149,16 +149,18 @@ class AudioEngine {
 
     // Cymbals
     this.instruments.crash = new Tone.MetalSynth({
-      frequency: 300, envelope: { attack: 0.001, decay: 1, release: 3 },
+      envelope: { attack: 0.001, decay: 1, release: 3 },
       harmonicity: 5.1, modulationIndex: 64, resonance: 3000, octaves: 1.5
     }).connect(this.reverb!);
-    this.instruments.crash.volume.value = -10;
+    (this.instruments.crash as Tone.MetalSynth).frequency.value = 300;
+    this.instruments.crash.volume.value = -8;
 
     this.instruments.ride = new Tone.MetalSynth({
-      frequency: 400, envelope: { attack: 0.001, decay: 1.5, release: 3 },
+      envelope: { attack: 0.001, decay: 1.5, release: 3 },
       harmonicity: 5.1, modulationIndex: 32, resonance: 3000, octaves: 1.5
     }).connect(this.reverb!);
-    this.instruments.ride.volume.value = -12;
+    (this.instruments.ride as Tone.MetalSynth).frequency.value = 400;
+    this.instruments.ride.volume.value = -10;
   }
 
   setKit(kit: DrumKit) {
