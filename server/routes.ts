@@ -180,10 +180,10 @@ export async function registerRoutes(
         'ride': 51
       };
 
-      // Process each pattern in sequence
+      // Process each pattern in sequence using wait accumulation
+      let waitSteps = 0;
+      
       patterns.forEach((grid: any[], patternIndex: number) => {
-        const stepOffset = patternIndex * 32; // Each pattern is 32 steps
-        
         // Group by step
         const steps = new Array(32).fill(null).map(() => [] as any[]);
         grid.forEach((note: any) => {
@@ -192,20 +192,29 @@ export async function registerRoutes(
           }
         });
 
-        steps.forEach((notesInStep, stepIndex) => {
+        steps.forEach((notesInStep) => {
           if (notesInStep.length > 0) {
             const pitches = notesInStep.map((n: any) => drumMap[n.drum]).filter(Boolean);
             if (pitches.length > 0) {
-              mainTrack.addEvent(new MidiWriter.NoteEvent({
+              const eventOptions: any = {
                 pitch: pitches,
                 duration: '16',
-                velocity: notesInStep[0].velocity || 100
-              }));
+                velocity: notesInStep[0].velocity || 100,
+                channel: 10
+              };
+              
+              // Add wait if there were rests before this note
+              if (waitSteps > 0) {
+                eventOptions.wait = 'T' + (waitSteps * 32);
+                waitSteps = 0;
+              }
+              
+              mainTrack.addEvent(new MidiWriter.NoteEvent(eventOptions));
             } else {
-              mainTrack.addEvent(new MidiWriter.NoteEvent({pitch: [], duration: '16', wait: true}));
+              waitSteps++;
             }
           } else {
-            mainTrack.addEvent(new MidiWriter.NoteEvent({pitch: [], duration: '16', wait: true}));
+            waitSteps++;
           }
         });
       });

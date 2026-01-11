@@ -61,10 +61,10 @@ export default function Studio() {
   const [activeTab, setActiveTab] = useState("pattern");
   
   // Track velocity multipliers (per-track volume control)
-  const [trackVelocities, setTrackVelocities] = useState<Record<string, number>>({
+  const [trackVelocities, setTrackVelocities] = useState<Record<string, number>>(() => ({
     kick: 100, snare: 100, hihat_closed: 100, hihat_open: 100,
-    tom_1: 100, tom_2: 100, crash: 100, ride: 100
-  });
+    tom_1: 100, tom_2: 100, crash: 100, ride: 100, china: 100
+  }));
 
   // --- Hooks ---
   const { toast } = useToast();
