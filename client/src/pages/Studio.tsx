@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import * as Tone from "tone";
 import { Download, Play, Save, Square, Music, Volume2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 import { usePatterns, useCreatePattern, useGeneratePattern, useExportMidi, usePattern } from "@/hooks/use-patterns";
 import { audioEngine, type DrumInstrument } from "@/lib/audio";
