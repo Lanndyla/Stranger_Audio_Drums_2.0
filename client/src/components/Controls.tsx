@@ -1,8 +1,9 @@
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Loader2, Wand2 } from "lucide-react";
+import { Loader2, Wand2, Blend } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { DRUM_KITS, type DrumKit } from "@/lib/audio";
 
 interface ControlsProps {
   bpm: number;
@@ -13,9 +14,17 @@ interface ControlsProps {
   setType: (type: string) => void;
   onGenerate: () => void;
   isGenerating: boolean;
+  complexity: number;
+  setComplexity: (complexity: number) => void;
+  styleMix: number;
+  setStyleMix: (mix: number) => void;
+  secondaryStyle: string;
+  setSecondaryStyle: (style: string) => void;
+  kit: DrumKit;
+  setKit: (kit: DrumKit) => void;
 }
 
-const STYLES = ["Djent", "Metal", "Rock", "Post-hardcore", "Pop", "Industrial", "Cyberpunk"];
+const STYLES = ["Djent", "Metal", "Rock", "Post-hardcore", "Pop", "Industrial", "Cyberpunk", "Jazz", "Funk"];
 const TYPES = ["Groove", "Fill", "Breakdown", "Intro", "Blast Beat"];
 
 export function Controls({ 
@@ -23,73 +32,160 @@ export function Controls({
   style, setStyle, 
   type, setType, 
   onGenerate, 
-  isGenerating 
+  isGenerating,
+  complexity, setComplexity,
+  styleMix, setStyleMix,
+  secondaryStyle, setSecondaryStyle,
+  kit, setKit
 }: ControlsProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 p-6 metal-surface border-b border-border/50 items-end">
-      
-      {/* BPM Control */}
-      <div className="space-y-3">
-        <div className="flex justify-between items-center">
-          <Label className="font-mono text-xs text-primary/80 uppercase tracking-widest">Tempo</Label>
-          <span className="font-display font-bold text-xl text-primary text-glow w-16 text-right">{bpm}</span>
+    <div className="p-4 metal-surface border-b border-border/50">
+      {/* Row 1: Main Controls */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+        {/* BPM Control */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <Label className="font-mono text-[10px] text-primary/80 uppercase tracking-widest">Tempo</Label>
+            <span className="font-display font-bold text-lg text-primary text-glow">{bpm}</span>
+          </div>
+          <Slider
+            value={[bpm]}
+            onValueChange={(vals) => setBpm(vals[0])}
+            min={60}
+            max={240}
+            step={1}
+            className="w-full"
+            data-testid="slider-bpm"
+          />
         </div>
-        <Slider
-          value={[bpm]}
-          onValueChange={(vals) => setBpm(vals[0])}
-          min={60}
-          max={240}
-          step={1}
-          className="w-full"
-        />
+
+        {/* Style Selector */}
+        <div className="space-y-2">
+          <Label className="font-mono text-[10px] text-secondary/80 uppercase tracking-widest">Primary Style</Label>
+          <Select value={style} onValueChange={setStyle}>
+            <SelectTrigger className="h-9 border-secondary/30 focus:ring-secondary/50" data-testid="select-style">
+              <SelectValue placeholder="Select Style" />
+            </SelectTrigger>
+            <SelectContent>
+              {STYLES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Type Selector */}
+        <div className="space-y-2">
+          <Label className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">Pattern Type</Label>
+          <Select value={type} onValueChange={setType}>
+            <SelectTrigger className="h-9" data-testid="select-type">
+              <SelectValue placeholder="Select Type" />
+            </SelectTrigger>
+            <SelectContent>
+              {TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Kit Selector */}
+        <div className="space-y-2">
+          <Label className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">Drum Kit</Label>
+          <Select value={kit} onValueChange={(v) => setKit(v as DrumKit)}>
+            <SelectTrigger className="h-9" data-testid="select-kit">
+              <SelectValue placeholder="Select Kit" />
+            </SelectTrigger>
+            <SelectContent>
+              {DRUM_KITS.map(k => <SelectItem key={k.id} value={k.id}>{k.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Generate Button */}
+        <Button 
+          onClick={onGenerate} 
+          disabled={isGenerating}
+          className="h-full min-h-[60px] relative overflow-hidden group bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-white shadow-[0_0_20px_rgba(0,243,255,0.3)] border-0"
+          data-testid="button-generate"
+        >
+          {isGenerating ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              SYNTHESIZING...
+            </>
+          ) : (
+            <>
+              <Wand2 className="mr-2 h-4 w-4" />
+              GENERATE
+            </>
+          )}
+          <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent z-10" />
+        </Button>
       </div>
 
-      {/* Style Selector */}
-      <div className="space-y-2">
-        <Label className="font-mono text-xs text-secondary/80 uppercase tracking-widest">Genre Style</Label>
-        <Select value={style} onValueChange={setStyle}>
-          <SelectTrigger className="border-secondary/30 focus:ring-secondary/50">
-            <SelectValue placeholder="Select Style" />
-          </SelectTrigger>
-          <SelectContent>
-            {STYLES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-          </SelectContent>
-        </Select>
-      </div>
+      {/* Row 2: Advanced Controls */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-3 border-t border-white/5">
+        {/* Complexity Slider */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <Label className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">Complexity</Label>
+            <span className="font-mono text-xs text-muted-foreground">{complexity}%</span>
+          </div>
+          <Slider
+            value={[complexity]}
+            onValueChange={(vals) => setComplexity(vals[0])}
+            min={10}
+            max={100}
+            step={5}
+            className="w-full"
+            data-testid="slider-complexity"
+          />
+        </div>
 
-      {/* Type Selector */}
-      <div className="space-y-2">
-        <Label className="font-mono text-xs text-muted-foreground uppercase tracking-widest">Pattern Type</Label>
-        <Select value={type} onValueChange={setType}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select Type" />
-          </SelectTrigger>
-          <SelectContent>
-            {TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-          </SelectContent>
-        </Select>
-      </div>
+        {/* Style Mixing */}
+        <div className="space-y-2">
+          <Label className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">Secondary Style</Label>
+          <Select value={secondaryStyle} onValueChange={setSecondaryStyle}>
+            <SelectTrigger className="h-9" data-testid="select-secondary-style">
+              <SelectValue placeholder="Mix with..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">None</SelectItem>
+              {STYLES.filter(s => s !== style).map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
 
-      {/* Generate Button */}
-      <Button 
-        onClick={onGenerate} 
-        disabled={isGenerating}
-        className="w-full relative overflow-hidden group bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-white shadow-[0_0_20px_rgba(0,243,255,0.3)] border-0"
-      >
-        {isGenerating ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            SYNTHESIZING...
-          </>
-        ) : (
-          <>
-            <Wand2 className="mr-2 h-4 w-4" />
-            GENERATE PATTERN
-          </>
-        )}
-        {/* Shine effect */}
-        <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent z-10" />
-      </Button>
+        {/* Style Mix Slider */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <Label className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest flex items-center gap-1">
+              <Blend className="w-3 h-3" /> Mix Ratio
+            </Label>
+            <span className="font-mono text-[10px] text-muted-foreground">
+              {styleMix}% / {100 - styleMix}%
+            </span>
+          </div>
+          <Slider
+            value={[styleMix]}
+            onValueChange={(vals) => setStyleMix(vals[0])}
+            min={0}
+            max={100}
+            step={5}
+            disabled={secondaryStyle === "none"}
+            className="w-full"
+            data-testid="slider-style-mix"
+          />
+        </div>
+
+        {/* Mix Labels */}
+        <div className="flex items-end pb-1">
+          <div className="flex justify-between w-full text-[10px] font-mono">
+            <span className={styleMix > 50 ? "text-primary" : "text-muted-foreground"}>{style}</span>
+            <span className="text-muted-foreground/50">|</span>
+            <span className={styleMix <= 50 && secondaryStyle !== "none" ? "text-secondary" : "text-muted-foreground"}>
+              {secondaryStyle === "none" ? "—" : secondaryStyle}
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

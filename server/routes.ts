@@ -74,10 +74,21 @@ export async function registerRoutes(
   app.post(api.patterns.generate.path, async (req, res) => {
     try {
       const { style, bpm, type } = api.patterns.generate.input.parse(req.body);
+      const { complexity = 50, secondaryStyle, styleMix = 70 } = req.body;
 
-      const prompt = `Generate a UNIQUE and creative drum pattern for a ${style} song. 
-      BPM: ${bpm}. Type: ${type}.
+      let styleDescription = style;
+      if (secondaryStyle && secondaryStyle !== "none") {
+        styleDescription = `a blend of ${styleMix}% ${style} and ${100 - styleMix}% ${secondaryStyle}`;
+      }
+
+      const complexityDesc = complexity < 30 ? "simple and minimal" : 
+                            complexity < 60 ? "moderately complex" : 
+                            complexity < 80 ? "complex with many notes" : "extremely dense and intricate";
+
+      const prompt = `Generate a UNIQUE and creative drum pattern for ${styleDescription} song. 
+      BPM: ${bpm}. Type: ${type}. Complexity: ${complexityDesc} (${complexity}% density).
       This request ID is ${Math.random()}. Ensure this pattern is distinct from previous outputs.
+      
       Return a JSON object with two fields:
       1. 'grid': an array of objects representing the pattern. Each object has:
          - 'step': integer 0-31 (32 steps)
@@ -85,11 +96,16 @@ export async function registerRoutes(
          - 'velocity': integer 0-127 (Vary velocities for human feel!)
       2. 'suggestedName': a creative string name for this pattern.
       
-      Make it realistic for the genre. 
+      Complexity guide: At ${complexity}% complexity, include approximately ${Math.floor((complexity / 100) * 80)} notes total.
+      
+      Make it realistic for the genre(s). 
       - For Djent/Metal: use syncopated kicks, ghost notes on snare, and aggressive accents.
       - For Blast Beat: fast, intense, alternating kick/snare or unison.
       - For Intro: build-up or establishing groove.
       - For Pop (Lady Gaga, Britney Spears, Maroon 5, Jonas Brothers): focus on a strong, steady kick on 1 and 3, consistent backbeat on 2 and 4, and clear, danceable hi-hat patterns.
+      - For Jazz: swung feel, ride cymbal emphasis, ghost notes on snare, subtle kick patterns.
+      - For Funk: syncopated grooves, heavy on the one, ghost notes everywhere.
+      ${secondaryStyle ? `- Blend characteristics of both ${style} and ${secondaryStyle} based on the mix ratio.` : ''}
       
       Ensure the JSON is valid and only return the JSON.`;
 
@@ -104,7 +120,6 @@ export async function registerRoutes(
 
       const result = JSON.parse(content);
       
-      // Basic validation of the AI response structure
       if (!result.grid || !Array.isArray(result.grid)) {
         throw new Error("Invalid grid data received from AI");
       }
@@ -113,6 +128,70 @@ export async function registerRoutes(
     } catch (error) {
       console.error("AI Generation Error:", error);
       res.status(500).json({ message: "Failed to generate pattern" });
+    }
+  });
+
+  // Export full arrangement as single MIDI
+  app.post("/api/patterns/export-arrangement", async (req, res) => {
+    try {
+      const { bpm, patterns } = req.body;
+      
+      const tracks: MidiWriter.Track[] = [];
+      const mainTrack = new MidiWriter.Track();
+      mainTrack.addEvent(new MidiWriter.ProgramChangeEvent({ instrument: 1 }));
+      mainTrack.setTempo(bpm);
+
+      const drumMap: Record<string, number> = {
+        'kick': 36,
+        'snare': 38,
+        'hihat_closed': 42,
+        'hihat_open': 46,
+        'tom_1': 48,
+        'tom_2': 45,
+        'crash': 49,
+        'ride': 51
+      };
+
+      // Process each pattern in sequence
+      patterns.forEach((grid: any[], patternIndex: number) => {
+        const stepOffset = patternIndex * 32; // Each pattern is 32 steps
+        
+        // Group by step
+        const steps = new Array(32).fill(null).map(() => [] as any[]);
+        grid.forEach((note: any) => {
+          if (note.step >= 0 && note.step < 32) {
+            steps[note.step].push(note);
+          }
+        });
+
+        steps.forEach((notesInStep, stepIndex) => {
+          if (notesInStep.length > 0) {
+            const pitches = notesInStep.map((n: any) => drumMap[n.drum]).filter(Boolean);
+            if (pitches.length > 0) {
+              mainTrack.addEvent(new MidiWriter.NoteEvent({
+                pitch: pitches,
+                duration: '16',
+                velocity: notesInStep[0].velocity || 100
+              }));
+            } else {
+              mainTrack.addEvent(new MidiWriter.NoteEvent({pitch: [], duration: '16', wait: true}));
+            }
+          } else {
+            mainTrack.addEvent(new MidiWriter.NoteEvent({pitch: [], duration: '16', wait: true}));
+          }
+        });
+      });
+
+      const write = new MidiWriter.Writer(mainTrack);
+      const fileData = write.buildFile();
+      
+      res.setHeader('Content-Type', 'audio/midi');
+      res.setHeader('Content-Disposition', 'attachment; filename="arrangement.mid"');
+      res.send(Buffer.from(fileData));
+
+    } catch (error) {
+      console.error("Arrangement Export Error:", error);
+      res.status(500).json({ message: "Failed to export arrangement" });
     }
   });
 
@@ -137,11 +216,11 @@ export async function registerRoutes(
         'ride': 51
       };
 
-      // Group by step to handle simultaneous notes
-      const steps = new Array(16).fill(null).map(() => [] as any[]);
+      // Group by step to handle simultaneous notes (32 steps)
+      const steps = new Array(32).fill(null).map(() => [] as any[]);
       
       grid.forEach((note: any) => {
-        if (note.step >= 0 && note.step < 16) {
+        if (note.step >= 0 && note.step < 32) {
           steps[note.step].push(note);
         }
       });
