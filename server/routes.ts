@@ -99,7 +99,17 @@ export async function registerRoutes(
       Complexity guide: At ${complexity}% complexity, include approximately ${Math.floor((complexity / 100) * 80)} notes total.
       
       Make it realistic for the genre(s). 
-      - For Djent/Metal: use syncopated kicks, ghost notes on snare, and aggressive accents.
+      - For Djent: Create polyrhythmic patterns inspired by Meshuggah, Periphery, TesseracT, Animals as Leaders, Monuments, Vildhjarta, After the Burial, Veil of Maya, Northlane, and The Contortionist. Key characteristics:
+        * Heavy syncopated kick patterns that lock with low-tuned guitar chugs (think Meshuggah's "Bleed" or "Demiurge")
+        * Polymeters and odd groupings (3 over 4, 5 over 4, 7 over 8)
+        * China/crash accents on downbeats of riff phrases
+        * Ghost notes and varied snare velocities (40-70 for ghosts, 100-120 for accents)
+        * Ride cymbal bell patterns during verse sections
+        * Double kick patterns that follow guitar syncopation, NOT constant 16th notes
+        * Kick patterns should have "gaps" and syncopation - avoid straight 16ths
+        * Use hi-hat sparingly, prefer ride for verses
+        * Snare often on unexpected beats, not just 2 and 4
+      - For Metal: aggressive double bass, powerful snare hits, crash accents on downbeats.
       - For Blast Beat: fast, intense, alternating kick/snare or unison.
       - For Intro: build-up or establishing groove.
       - For Pop (Lady Gaga, Britney Spears, Maroon 5, Jonas Brothers): focus on a strong, steady kick on 1 and 3, consistent backbeat on 2 and 4, and clear, danceable hi-hat patterns.
