@@ -99,64 +99,122 @@ export async function registerRoutes(
                                 timeSignature === "9/8" ? "9/8 compound time" :
                                 timeSignature === "12/8" ? "12/8 blues/shuffle feel" : `${timeSignature} time`;
 
-      const prompt = `Generate a UNIQUE and creative drum pattern for ${styleDescription} song. 
-      BPM: ${bpm}. Type: ${type}. Complexity: ${complexityDesc} (${complexity}% density).
-      TIME SIGNATURE: ${timeSignature} (${timeSignatureDesc}). TOTAL STEPS: ${stepCount} (this is 2 bars worth of 16th notes in ${timeSignature}).
-      This request ID is ${Math.random()}. Ensure this pattern is distinct from previous outputs.
-      
-      Return a JSON object with two fields:
-      1. 'grid': an array of objects representing the pattern. Each object has:
-         - 'step': integer 0-${stepCount - 1} (${stepCount} steps total for 2 bars in ${timeSignature})
-         - 'drum': string (one of: 'kick', 'snare', 'hihat_closed', 'hihat_open', 'tom_1', 'tom_2', 'crash', 'ride')
-         - 'velocity': integer 0-127 (Vary velocities for human feel!)
-      2. 'suggestedName': a creative string name for this pattern.
-      
-      IMPORTANT: The pattern has ${stepCount} total steps (0-${stepCount - 1}). In ${timeSignature} time:
-      - Each bar has ${beatsPerBar} beats
-      - Each beat subdivides into ${noteValue === 8 ? 2 : 4} 16th notes
-      - Pattern spans 2 full bars
-      - Place kick and snare hits according to the ${timeSignature} feel
-      
-      Complexity guide: At ${complexity}% complexity, include approximately ${Math.floor((complexity / 100) * (stepCount * 2.5))} notes total.
-      
-      Make it realistic for the genre(s). 
-      - For Djent: Create polyrhythmic patterns inspired by Meshuggah, Periphery, TesseracT, Animals as Leaders, Monuments, Vildhjarta, After the Burial, Veil of Maya, Northlane, and The Contortionist. Key characteristics:
-        * Heavy syncopated kick patterns that lock with low-tuned guitar chugs (think Meshuggah's "Bleed" or "Demiurge")
-        * Polymeters and odd groupings (3 over 4, 5 over 4, 7 over 8)
-        * China/crash accents on downbeats of riff phrases
-        * Ghost notes and varied snare velocities (40-70 for ghosts, 100-120 for accents)
-        * Ride cymbal bell patterns during verse sections
-        * Double kick patterns that follow guitar syncopation, NOT constant 16th notes
-        * Kick patterns should have "gaps" and syncopation - avoid straight 16ths
-        * Use hi-hat sparingly, prefer ride for verses
-        * Snare often on unexpected beats, not just 2 and 4
-      - For Metal: aggressive double bass, powerful snare hits, crash accents on downbeats.
-      - For Blast Beat: THIS IS CRITICAL - A blast beat is a SPECIFIC, RELENTLESS pattern:
-        * REQUIRED: Kick drum on EVERY SINGLE 16th note (steps 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31)
-        * REQUIRED: Snare on EVERY OTHER 16th note, alternating with kick accents (steps 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31 OR steps 0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30)
-        * REQUIRED: Ride or hi-hat on every beat or every other 16th for intensity
-        * Velocities should be HIGH (100-127) and consistent for machine-gun intensity
-        * Add crash on step 0 and step 16 for impact
-        * This creates the signature "wall of sound" blast beat effect
-        * Think Slayer, Cannibal Corpse, Nile, Origin - RELENTLESS speed and density
-      - For Breakdown: THIS IS CRITICAL - Metal breakdowns are heavy, rhythmic patterns that lock with guitar chugs:
-        * Half-time or slow, crushing feel - kicks should emphasize the "chug" rhythm
-        * Common pattern: Kick on beat 1, then syncopated kicks that follow guitar palm-muted chugs
-        * Snare on beat 3 (half-time feel) or on 2 and 4 for standard time
-        * China cymbal or crash accents on the first beat of each phrase (steps 0, 8, 16, 24)
-        * Open hi-hat or ride bell for sustained tension
-        * Add tom fills between phrases for impact (steps 14-15, 30-31)
-        * Think Lamb of God, Gojira, Meshuggah, Parkway Drive, Knocked Loose, Architects
-        * Kick patterns should be SYNCOPATED and match typical djent/metal guitar rhythms like: 0-0-0--0-0--0-0-0 pattern
-        * Velocities: Kicks 100-127 for power, snares 110-127 for crack, cymbals 90-110
-        * NOT constant 16th notes - use space and syncopation for maximum heaviness
-      - For Intro: build-up or establishing groove.
-      - For Pop (Lady Gaga, Britney Spears, Maroon 5, Jonas Brothers): focus on a strong, steady kick on 1 and 3, consistent backbeat on 2 and 4, and clear, danceable hi-hat patterns.
-      - For Jazz: swung feel, ride cymbal emphasis, ghost notes on snare, subtle kick patterns.
-      - For Funk: syncopated grooves, heavy on the one, ghost notes everywhere.
-      ${secondaryStyle ? `- Blend characteristics of both ${style} and ${secondaryStyle} based on the mix ratio.` : ''}
-      
-      Ensure the JSON is valid and only return the JSON.`;
+      const prompt = `You are a world-class session drummer. Generate a UNIQUE, realistic drum pattern.
+
+=== PATTERN SPECS ===
+Style: ${styleDescription}
+BPM: ${bpm}
+Type: ${type}
+Complexity: ${complexityDesc} (${complexity}%)
+Time Signature: ${timeSignature} (${timeSignatureDesc})
+Total Steps: ${stepCount} (2 bars of 16th notes)
+Request ID: ${Math.random()}
+
+=== VELOCITY RULES (CRITICAL FOR REALISM) ===
+- Kick: Main hits 95-120, accents 120-127, ghost kicks 70-85
+- Snare: Backbeats 100-120, accents 115-127, ghost notes 40-65
+- Hi-hat closed: Downbeats 85-100, upbeats 60-80, ghost 45-60
+- Hi-hat open: 90-115 (use sparingly for accents)
+- Ride: Bell 95-115, bow 70-95
+- Toms: 85-120 (accent fills higher)
+- Crash: 100-127 (phrase starts, accents)
+- NEVER use identical velocities on consecutive notes of same drum
+- Downbeats louder than upbeats (velocity ladder pattern)
+
+=== PATTERN TYPE REQUIREMENTS ===
+${type === "Groove" ? `GROOVE: Establish the main beat. Create a 2-bar repeating pattern with:
+- Consistent kick/snare backbone
+- Slight variation in bar 2 (different hi-hat, added ghost note)
+- Should feel like the verse or chorus foundation` : ""}
+${type === "Fill" ? `FILL: Transitional drum fill. Requirements:
+- Build activity in final 4-8 steps (steps ${stepCount - 8} to ${stepCount - 1})
+- Use toms, crashes, rapid snare rolls
+- Lead INTO next section - end with crash on step 0 or ${stepCount - 1}
+- First half can be simpler groove, second half is the fill` : ""}
+${type === "Intro" ? `INTRO: Build anticipation. Requirements:
+- Start sparse (fewer drums initially)
+- Gradually add elements across the 2 bars
+- End with setup for main groove (crash + kick on final beat)
+- Consider hi-hat only first bar, add kick/snare in bar 2` : ""}
+${type === "Breakdown" ? `BREAKDOWN: Heavy, crushing half-time feel. Requirements:
+- Half-time snare (beat 3 of each bar, NOT 2 and 4)
+- Syncopated kick following guitar chug rhythm
+- Crashes/china on phrase starts (steps 0, 16)
+- Space and heaviness over speed
+- Think Meshuggah, Lamb of God, Knocked Loose` : ""}
+
+=== GENRE CHARACTERISTICS ===
+${style === "Djent" || secondaryStyle === "Djent" ? `DJENT (Meshuggah, Periphery, TesseracT, Animals as Leaders):
+- Polyrhythmic kick patterns locking with guitar chugs
+- Syncopated kicks with GAPS - never straight 16ths
+- Ghost snares throughout (velocity 40-65)
+- Ride bell preferred over hi-hat
+- Snares on unexpected beats, not just 2/4
+- China crashes on riff phrase downbeats
+- Common kick groupings: 3s, 5s, 7s over 4/4` : ""}
+${style === "Metal" || secondaryStyle === "Metal" ? `METAL (Metallica, Slayer, Pantera):
+- Driving double kick sections
+- Powerful snare on 2 and 4
+- Crash accents on downbeats
+- Aggressive, forward-driving energy
+- Tom fills between sections` : ""}
+${style === "Rock" || secondaryStyle === "Rock" ? `ROCK (AC/DC, Foo Fighters, Queens of the Stone Age):
+- Solid kick on 1 and 3
+- Snare backbeat on 2 and 4
+- Steady 8th-note hi-hat or ride
+- Keep it simple but powerful
+- Occasional crash on phrase starts` : ""}
+${style === "Post-hardcore" || secondaryStyle === "Post-hardcore" ? `POST-HARDCORE (Underoath, Thrice, Alexisonfire):
+- Mix of punk energy and metal heaviness
+- Driving 8th-note patterns
+- Syncopated breakdowns
+- Dynamic shifts between soft/loud
+- Double kick bursts, not constant` : ""}
+${style === "Pop" || secondaryStyle === "Pop" ? `POP (modern dance-pop, EDM-influenced):
+- Kick on 1 and 3 (four-on-floor optional)
+- Snare/clap on 2 and 4
+- Consistent hi-hat 8ths or 16ths
+- Keep it simple and danceable
+- Minimal fills, steady groove` : ""}
+${style === "Blast Beat" || secondaryStyle === "Blast Beat" ? `BLAST BEAT (death metal, black metal):
+- KICK on EVERY 16th note (all ${stepCount} steps)
+- SNARE alternating with kick accents (every other step)
+- Ride or hi-hat constant for intensity
+- Velocities 100-127, machine-gun consistent
+- Crashes on steps 0 and 16` : ""}
+${style === "Jazz" || secondaryStyle === "Jazz" ? `JAZZ (bebop, swing):
+- Ride cymbal leads (swing pattern on bow/bell)
+- Hi-hat on 2 and 4 (foot)
+- Ghost notes on snare throughout
+- Kick sparse, "feathering" the beat
+- Light, conversational feel` : ""}
+${style === "Funk" || secondaryStyle === "Funk" ? `FUNK (James Brown, Tower of Power):
+- Heavy accent on beat 1 (kick + crash)
+- Syncopated ghost notes everywhere
+- 16th-note hi-hat with open accents
+- Kick syncopation, not straight
+- Snare backbeat with ghosts around it` : ""}
+${secondaryStyle && secondaryStyle !== "none" ? `\nBLENDING: Mix ${styleMix}% ${style} with ${100 - styleMix}% ${secondaryStyle}. Use primary genre's core pattern with secondary's flavor elements.` : ""}
+
+=== HUMANIZATION ===
+- Add 1-2 ghost snares per bar on offbeats (velocity 40-65)
+- Vary hi-hat velocity: downbeats louder (85-95), upbeats softer (60-75)
+- Occasional hi-hat open for accent (steps 7, 15, 23, 31 work well)
+- No two consecutive same-drum hits with identical velocity
+- Kick velocity should follow phrase dynamics (louder at phrase starts)
+
+=== OUTPUT FORMAT ===
+Return JSON with:
+{
+  "grid": [{"step": 0, "drum": "kick", "velocity": 110}, ...],
+  "suggestedName": "Creative pattern name"
+}
+
+Drums: kick, snare, hihat_closed, hihat_open, tom_1, tom_2, crash, ride
+Steps: 0 to ${stepCount - 1}
+Target note count: ~${Math.floor((complexity / 100) * (stepCount * 2.5))} notes
+
+Return ONLY valid JSON.`;
 
       const completion = await client.chat.completions.create({
         model: apiKey ? "gpt-4o" : "gpt-5.1",
@@ -289,41 +347,62 @@ export async function registerRoutes(
         ? intensity.map((v: number, i: number) => `Segment ${i + 1}: ${Math.round(v * 100)}%`).join(", ")
         : "Even intensity throughout";
 
-      const prompt = `You are an expert drummer creating a drum pattern to accompany an audio track.
+      const prompt = `You are a world-class session drummer creating drums to accompany an audio track.
 
-AUDIO ANALYSIS:
+=== AUDIO ANALYSIS ===
 - Detected BPM: ${bpm}
 - Detection Confidence: ${Math.round((confidence || 0.5) * 100)}%
 - Duration: ${Math.round(duration || 10)} seconds
-- Number of detected transients/onsets: ${onsetCount || 20}
+- Transients/onsets detected: ${onsetCount || 20}
 - Rhythm density: ${rhythmPattern} (${densityDesc})
 - Intensity profile: ${intensityProfile}
 
-REQUESTED STYLE: ${style}
+=== REQUESTED STYLE: ${style} ===
 
-Generate a drum pattern that:
-1. Complements the detected rhythm - if sparse, keep drums spacious; if dense, add more activity
-2. Matches the ${style} genre characteristics
-3. Follows the intensity curve - build up in intense sections, pull back in quieter ones
-4. Uses 32 steps (2 bars of 16th notes in 4/4)
+=== VELOCITY RULES (CRITICAL FOR REALISM) ===
+- Kick: Main hits 95-120, accents 120-127, ghost kicks 70-85
+- Snare: Backbeats 100-120, accents 115-127, ghost notes 40-65
+- Hi-hat closed: Downbeats 85-100, upbeats 60-80
+- Hi-hat open: 90-115 (use sparingly for accents)
+- Ride: Bell 95-115, bow 70-95
+- Toms: 85-120
+- Crash: 100-127
+- NEVER use identical velocities on consecutive same-drum hits
 
-Available drums: kick, snare, hihat_closed, hihat_open, tom_1, tom_2, crash, ride
+=== GENRE RULES ===
+${style === "Djent" ? `DJENT: Polyrhythmic kicks with GAPS, ghost snares (40-65 velocity), ride bell over hi-hat, syncopated not straight.` : ""}
+${style === "Metal" ? `METAL: Driving double kick, powerful snare on 2/4, crash accents, aggressive energy.` : ""}
+${style === "Rock" ? `ROCK: Solid kick on 1/3, snare on 2/4, steady hi-hat 8ths, simple but powerful.` : ""}
+${style === "Post-hardcore" ? `POST-HARDCORE: Mix of punk energy and metal, syncopated breakdowns, dynamic shifts.` : ""}
+${style === "Pop" ? `POP: Kick on 1/3, snare on 2/4, consistent hi-hat, simple and danceable.` : ""}
+${style === "Blast Beat" ? `BLAST BEAT: Kick on EVERY 16th note, snare alternating, relentless intensity 100-127.` : ""}
+${style === "Jazz" ? `JAZZ: Ride cymbal leads, ghost snares throughout, sparse feathered kick.` : ""}
+${style === "Funk" ? `FUNK: Heavy on beat 1, ghost notes everywhere, syncopated 16th hi-hats.` : ""}
 
-Return a JSON object with:
+=== DENSITY MATCHING ===
+${rhythmPattern === "sparse" ? "Create a MINIMAL pattern - leave lots of space, focus on kick/snare backbone only." : ""}
+${rhythmPattern === "moderate" ? "Create a balanced groove with steady hi-hat and standard kick/snare placement." : ""}
+${rhythmPattern === "busy" ? "Create an active pattern with ghost notes, fills, and cymbal variety." : ""}
+${rhythmPattern === "very_busy" ? "Create a dense, technical pattern with maximum activity." : ""}
+
+=== HUMANIZATION ===
+- Add ghost snares on offbeats (velocity 40-65)
+- Vary hi-hat velocity: downbeats louder, upbeats softer
+- No identical velocities on consecutive hits
+- Match the audio's intensity curve
+
+=== OUTPUT ===
+Return JSON:
 {
-  "grid": [
-    {"step": 0, "drum": "kick", "velocity": 100},
-    {"step": 0, "drum": "hihat_closed", "velocity": 80},
-    ...
-  ],
+  "grid": [{"step": 0, "drum": "kick", "velocity": 110}, ...],
   "style": "${style}",
-  "description": "Brief description of the pattern"
+  "description": "Brief pattern description"
 }
 
-Velocity should be 40-127. Use lower velocities (40-70) for ghost notes and higher (90-127) for accents.
-Steps are 0-31 (32 total 16th notes = 2 bars).
+Drums: kick, snare, hihat_closed, hihat_open, tom_1, tom_2, crash, ride
+Steps: 0-31 (32 16th notes = 2 bars in 4/4)
 
-Ensure the pattern grooves well and would complement the analyzed audio.`;
+Return ONLY valid JSON.`;
 
       const completion = await client.chat.completions.create({
         model: apiKey ? "gpt-4o" : "gpt-5.1",
