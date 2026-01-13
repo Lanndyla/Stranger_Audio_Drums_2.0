@@ -12,6 +12,73 @@ declare module "http" {
   }
 }
 
+// CORS middleware for external API access (JUCE plugin, etc.)
+app.use((req, res, next) => {
+  // Allow requests from any origin for API routes (no credentials mode)
+  if (req.path.startsWith('/api/')) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key');
+    res.setHeader('Access-Control-Max-Age', '86400');
+    
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+      return res.status(204).end();
+    }
+  }
+  next();
+});
+
+// API Key authentication middleware for external access
+const STRANGER_DRUMS_API_KEY = process.env.STRANGER_DRUMS_API_KEY;
+
+app.use((req, res, next) => {
+  // Skip auth for docs endpoint and OPTIONS preflight
+  if (req.path === '/api/docs' || req.method === 'OPTIONS') {
+    return next();
+  }
+  
+  // Only protect API routes
+  if (!req.path.startsWith('/api/')) {
+    return next();
+  }
+  
+  // If no API key is configured, allow all requests (development mode)
+  if (!STRANGER_DRUMS_API_KEY) {
+    return next();
+  }
+  
+  const apiKey = req.headers['x-api-key'] as string;
+  const origin = req.headers.origin;
+  const host = req.get('host') || '';
+  
+  // Check if request is same-origin (browser UI on same host)
+  // Origin header will match the host for same-origin requests
+  if (origin) {
+    try {
+      const originUrl = new URL(origin);
+      const originHost = originUrl.host; // includes port
+      
+      // Allow only exact same-origin match
+      if (originHost === host) {
+        return next();
+      }
+    } catch (e) {
+      // Invalid origin URL, fall through to API key check
+    }
+  }
+  
+  // For all other requests (external, cross-origin), require API key
+  if (!apiKey || apiKey !== STRANGER_DRUMS_API_KEY) {
+    return res.status(401).json({ 
+      error: 'Unauthorized', 
+      message: 'Valid X-API-Key header required for external API access' 
+    });
+  }
+  
+  next();
+});
+
 app.use(
   express.json({
     verify: (req, _res, buf) => {

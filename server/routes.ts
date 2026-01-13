@@ -16,6 +16,93 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  
+  // API Documentation endpoint for external integrations
+  app.get("/api/docs", (req, res) => {
+    res.json({
+      name: "Stranger Drums API",
+      version: "1.0.0",
+      description: "AI-powered drum pattern generator with MIDI export",
+      baseUrl: `${req.protocol}://${req.get('host')}`,
+      authentication: {
+        type: "API Key",
+        header: "X-API-Key",
+        description: "External requests (from JUCE plugins, scripts, etc.) require the X-API-Key header. Browser requests from the web UI are automatically authorized.",
+        note: "Set STRANGER_DRUMS_API_KEY environment variable on the server to enable API key authentication."
+      },
+      endpoints: {
+        generate: {
+          method: "POST",
+          path: "/api/patterns/generate",
+          description: "Generate an AI drum pattern",
+          parameters: {
+            style: { type: "string", required: true, options: ["Djent", "Metal", "Rock", "Post-hardcore", "Pop", "Jazz", "Funk", "Blast Beat"] },
+            bpm: { type: "number", required: true, min: 60, max: 240 },
+            type: { type: "string", required: true, options: ["Groove", "Fill", "Breakdown", "Intro", "Blast Beat"] },
+            complexity: { type: "number", required: false, default: 50, min: 0, max: 100 },
+            secondaryStyle: { type: "string", required: false },
+            styleMix: { type: "number", required: false, default: 70 },
+            timeSignature: { type: "string", required: false, default: "4/4", options: ["4/4", "3/4", "5/4", "6/8", "7/8", "5/8", "9/8", "12/8"] },
+            stepCount: { type: "number", required: false, default: 32 },
+            apiKey: { type: "string", required: false, description: "Personal OpenAI API key" }
+          },
+          response: {
+            grid: [{ step: "number", drum: "string", velocity: "number (0-127)" }],
+            suggestedName: "string"
+          }
+        },
+        smartBeat: {
+          method: "POST",
+          path: "/api/patterns/smart-beat",
+          description: "Generate a pattern that locks with analyzed audio",
+          parameters: {
+            bpm: { type: "number", required: true },
+            style: { type: "string", required: true },
+            rhythmPattern: { type: "string", required: false, options: ["sparse", "moderate", "busy", "dense"] },
+            beatGrid: { type: "array<number>", required: false, description: "Step positions where beats were detected" },
+            accentSteps: { type: "array<number>", required: false, description: "Steps with accent hits" },
+            downbeatSteps: { type: "array<number>", required: false, description: "Steps at bar starts" }
+          }
+        },
+        listPatterns: {
+          method: "GET",
+          path: "/api/patterns",
+          description: "List all saved patterns"
+        },
+        getPattern: {
+          method: "GET",
+          path: "/api/patterns/:id",
+          description: "Get a specific pattern by ID"
+        },
+        exportMidi: {
+          method: "GET",
+          path: "/api/patterns/:id/midi",
+          description: "Export pattern as MIDI file"
+        }
+      },
+      drums: {
+        kick: { midiNote: 36 },
+        snare: { midiNote: 38 },
+        hihat_closed: { midiNote: 42 },
+        hihat_open: { midiNote: 46 },
+        tom_1: { midiNote: 48 },
+        tom_2: { midiNote: 45 },
+        crash: { midiNote: 49 },
+        ride: { midiNote: 51 }
+      },
+      timeSignatures: {
+        "4/4": { steps: 32 },
+        "3/4": { steps: 24 },
+        "5/4": { steps: 40 },
+        "6/8": { steps: 24 },
+        "7/8": { steps: 28 },
+        "5/8": { steps: 20 },
+        "9/8": { steps: 36 },
+        "12/8": { steps: 48 }
+      }
+    });
+  });
+
   // Pattern CRUD routes
   app.get(api.patterns.list.path, async (req, res) => {
     const patterns = await storage.getPatterns();
