@@ -81,9 +81,9 @@ export function Tutorial({ onClose }: TutorialProps) {
       }
 
       const rect = target.getBoundingClientRect();
-      const padding = 16;
-      const tooltipWidth = 280;
-      const tooltipHeight = 160;
+      const padding = 12;
+      const tooltipWidth = 240;
+      const tooltipHeight = 140;
 
       let top = 0;
       let left = 0;
@@ -183,67 +183,66 @@ export function Tutorial({ onClose }: TutorialProps) {
       
       <div 
         style={tooltipStyle}
-        className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border border-cyan-500/50 rounded-lg shadow-[0_0_30px_rgba(0,255,255,0.3)] p-4"
+        className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border border-cyan-500/50 rounded-lg shadow-[0_0_30px_rgba(0,255,255,0.3)] p-3"
         data-testid="tutorial-tooltip"
       >
         <div style={arrowStyle} />
         
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Lightbulb className="w-5 h-5 text-cyan-400" />
-            <span className="text-cyan-400 font-semibold text-sm">
-              Step {currentStep + 1} of {TUTORIAL_STEPS.length}
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-1">
+            <Lightbulb className="w-4 h-4 text-cyan-400" />
+            <span className="text-cyan-400 font-semibold text-xs">
+              {currentStep + 1}/{TUTORIAL_STEPS.length}
             </span>
           </div>
           <Button
             variant="ghost"
             size="icon"
-            className="h-6 w-6 text-gray-400 hover:text-white"
+            className="h-5 w-5 text-gray-400 hover:text-white"
             onClick={handleSkip}
             data-testid="tutorial-close"
           >
-            <X className="w-4 h-4" />
+            <X className="w-3 h-3" />
           </Button>
         </div>
 
-        <h3 className="text-lg font-bold text-white mb-2">{step.title}</h3>
-        <p className="text-gray-300 text-sm leading-relaxed mb-4">{step.content}</p>
+        <h3 className="text-sm font-bold text-white mb-1">{step.title}</h3>
+        <p className="text-gray-300 text-xs leading-relaxed mb-2">{step.content}</p>
 
         <div className="flex items-center justify-between">
           <Button
             variant="ghost"
             size="sm"
             onClick={handleSkip}
-            className="text-gray-400 hover:text-white"
+            className="text-gray-400 hover:text-white text-xs h-7 px-2"
             data-testid="tutorial-skip"
           >
-            Skip Tutorial
+            Skip
           </Button>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <Button
               variant="outline"
               size="sm"
               onClick={handlePrev}
               disabled={currentStep === 0}
-              className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 disabled:opacity-30"
+              className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 disabled:opacity-30 h-7 w-7 p-0"
               data-testid="tutorial-prev"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-3 h-3" />
             </Button>
             <Button
               size="sm"
               onClick={handleNext}
-              className="bg-cyan-500 hover:bg-cyan-600 text-black font-semibold"
+              className="bg-cyan-500 hover:bg-cyan-600 text-black font-semibold h-7 px-3 text-xs"
               data-testid="tutorial-next"
             >
-              {currentStep === TUTORIAL_STEPS.length - 1 ? "Finish" : "Next"}
-              {currentStep < TUTORIAL_STEPS.length - 1 && <ChevronRight className="w-4 h-4 ml-1" />}
+              {currentStep === TUTORIAL_STEPS.length - 1 ? "Done" : "Next"}
             </Button>
           </div>
         </div>
 
-        <div className="flex justify-center gap-1 mt-3">
+        <div className="flex justify-center gap-1 mt-2">
           {TUTORIAL_STEPS.map((_, idx) => (
             <div
               key={idx}
