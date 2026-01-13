@@ -81,7 +81,6 @@ export function SequencerGrid({ gridData, currentStep, onToggleStep, isPlaying, 
           <div key={row.id} className="contents">
             <div 
               className="h-10 flex items-center gap-1 px-1 text-[9px] font-mono font-bold text-muted-foreground/80 tracking-tight uppercase bg-black/40 border-b border-white/5 sticky left-0 z-10 whitespace-nowrap"
-              data-tutorial="track-velocities"
             >
               <span className="w-8 text-right truncate">{row.label.split(' ')[0]}</span>
               <Slider

@@ -133,7 +133,6 @@ export function SmartBeat({ onPatternGenerated, currentStyle }: SmartBeatProps) 
         onClick={() => setIsOpen(true)}
         className="gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-black font-bold shadow-[0_0_20px_rgba(255,165,0,0.4)] border-0"
         data-testid="button-smart-beat"
-        data-tutorial="smart-beat"
       >
         <Zap className="w-4 h-4" />
         SMART BEAT

@@ -245,17 +245,12 @@ class AudioEngine {
     if (this.currentKit === "custom_samples" && this.samplersLoaded) {
       const player = this.samplers.get(drum);
       if (player && player.loaded && player.buffer) {
-        try {
-          const oneShot = new Tone.Player(player.buffer).connect(this.compressor!);
-          oneShot.volume.value = Tone.gainToDb(vel) + 6;
-          const safeTime = Math.max(t, Tone.now() + 0.001);
-          oneShot.start(safeTime);
-          setTimeout(() => {
-            try { oneShot.dispose(); } catch {}
-          }, 3000);
-        } catch (err) {
-          // Ignore timing conflicts for rapid hits
-        }
+        const oneShot = new Tone.Player(player.buffer).connect(this.compressor!);
+        oneShot.volume.value = Tone.gainToDb(vel) + 6;
+        oneShot.start(t);
+        oneShot.onstop = () => {
+          oneShot.dispose();
+        };
         return;
       }
     }
