@@ -66,7 +66,10 @@ export function SmartBeat({ onPatternGenerated, currentStyle }: SmartBeatProps) 
         onsetCount: analysisResult.onsets.length,
         duration: analysisResult.duration,
         intensity: analysisResult.intensity.slice(0, 32),
-        confidence: analysisResult.confidence
+        confidence: analysisResult.confidence,
+        beatGrid: analysisResult.beatGrid,
+        accentSteps: analysisResult.accentSteps,
+        downbeatSteps: analysisResult.downbeatSteps
       };
       
       if (savedApiKey) {

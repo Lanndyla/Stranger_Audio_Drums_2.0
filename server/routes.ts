@@ -333,6 +333,9 @@ Return ONLY valid JSON.`;
         duration, 
         intensity, 
         confidence,
+        beatGrid,
+        accentSteps,
+        downbeatSteps,
         apiKey 
       } = req.body;
 
@@ -347,60 +350,68 @@ Return ONLY valid JSON.`;
         ? intensity.map((v: number, i: number) => `Segment ${i + 1}: ${Math.round(v * 100)}%`).join(", ")
         : "Even intensity throughout";
 
-      const prompt = `You are a world-class session drummer creating drums to accompany an audio track.
+      const beatGridStr = Array.isArray(beatGrid) && beatGrid.length > 0 
+        ? beatGrid.join(", ") 
+        : "0, 4, 8, 12, 16, 20, 24, 28";
+      const accentStepsStr = Array.isArray(accentSteps) && accentSteps.length > 0 
+        ? accentSteps.join(", ") 
+        : "0, 8, 16, 24";
+      const downbeatStepsStr = Array.isArray(downbeatSteps) && downbeatSteps.length > 0 
+        ? downbeatSteps.join(", ") 
+        : "0, 16";
 
-=== AUDIO ANALYSIS ===
-- Detected BPM: ${bpm}
-- Detection Confidence: ${Math.round((confidence || 0.5) * 100)}%
-- Duration: ${Math.round(duration || 10)} seconds
-- Transients/onsets detected: ${onsetCount || 20}
+      const prompt = `You are a world-class session drummer. Your job is to create drums that LOCK WITH the uploaded audio track.
+
+=== DETECTED RHYTHM FROM AUDIO (FOLLOW THIS!) ===
+- BPM: ${bpm}
+- Detected beat positions (place KICKS here): [${beatGridStr}]
+- Accent/strong beats (place SNARE or CRASH here): [${accentStepsStr}]
+- Downbeats (bar starts - add CRASH): [${downbeatStepsStr}]
 - Rhythm density: ${rhythmPattern} (${densityDesc})
 - Intensity profile: ${intensityProfile}
 
-=== REQUESTED STYLE: ${style} ===
+=== CRITICAL: FOLLOW THE TRACK ===
+The uploaded audio has hits at steps: [${beatGridStr}]
+YOU MUST place kick drums on these EXACT steps to lock with the track!
+- Place KICK on every detected beat position
+- Place SNARE on accent steps (typically 4, 12, 20, 28 for backbeat, or use detected accents)
+- Add CRASH on downbeat steps (bar starts)
+- Fill in hi-hat/ride on remaining steps based on density
 
-=== VELOCITY RULES (CRITICAL FOR REALISM) ===
-- Kick: Main hits 95-120, accents 120-127, ghost kicks 70-85
-- Snare: Backbeats 100-120, accents 115-127, ghost notes 40-65
-- Hi-hat closed: Downbeats 85-100, upbeats 60-80
-- Hi-hat open: 90-115 (use sparingly for accents)
-- Ride: Bell 95-115, bow 70-95
-- Toms: 85-120
+=== STYLE: ${style} ===
+${style === "Djent" ? `DJENT: Syncopated kicks following the detected rhythm, ghost snares, ride bell.` : ""}
+${style === "Metal" ? `METAL: Double kicks where detected, powerful snares, crash accents.` : ""}
+${style === "Rock" ? `ROCK: Solid groove, snare on 2/4, steady cymbals.` : ""}
+${style === "Post-hardcore" ? `POST-HARDCORE: Dynamic, mix of aggression and groove.` : ""}
+${style === "Pop" ? `POP: Clean, danceable, consistent hi-hat.` : ""}
+${style === "Blast Beat" ? `BLAST BEAT: Maximum intensity, every step filled.` : ""}
+${style === "Jazz" ? `JAZZ: Ride-led, ghost snares, feathered kick.` : ""}
+${style === "Funk" ? `FUNK: Heavy pocket, ghost notes, syncopated hats.` : ""}
+
+=== VELOCITY RULES ===
+- Kick: 95-120 (accents 120-127)
+- Snare: Backbeats 100-120, ghost notes 40-65
+- Hi-hat: Downbeats 85-100, upbeats 60-80
 - Crash: 100-127
-- NEVER use identical velocities on consecutive same-drum hits
+- VARY velocities - no identical consecutive values
 
-=== GENRE RULES ===
-${style === "Djent" ? `DJENT: Polyrhythmic kicks with GAPS, ghost snares (40-65 velocity), ride bell over hi-hat, syncopated not straight.` : ""}
-${style === "Metal" ? `METAL: Driving double kick, powerful snare on 2/4, crash accents, aggressive energy.` : ""}
-${style === "Rock" ? `ROCK: Solid kick on 1/3, snare on 2/4, steady hi-hat 8ths, simple but powerful.` : ""}
-${style === "Post-hardcore" ? `POST-HARDCORE: Mix of punk energy and metal, syncopated breakdowns, dynamic shifts.` : ""}
-${style === "Pop" ? `POP: Kick on 1/3, snare on 2/4, consistent hi-hat, simple and danceable.` : ""}
-${style === "Blast Beat" ? `BLAST BEAT: Kick on EVERY 16th note, snare alternating, relentless intensity 100-127.` : ""}
-${style === "Jazz" ? `JAZZ: Ride cymbal leads, ghost snares throughout, sparse feathered kick.` : ""}
-${style === "Funk" ? `FUNK: Heavy on beat 1, ghost notes everywhere, syncopated 16th hi-hats.` : ""}
+=== DENSITY: ${rhythmPattern} ===
+${rhythmPattern === "sparse" ? "MINIMAL - kicks on detected beats only, sparse hi-hat, no fills" : ""}
+${rhythmPattern === "moderate" ? "BALANCED - kicks on beats, steady hi-hat, occasional ghost notes" : ""}
+${rhythmPattern === "busy" ? "ACTIVE - fills, ghost notes, cymbal variety" : ""}
+${rhythmPattern === "dense" ? "DENSE - maximum activity, fills, technical patterns" : ""}
 
-=== DENSITY MATCHING ===
-${rhythmPattern === "sparse" ? "Create a MINIMAL pattern - leave lots of space, focus on kick/snare backbone only." : ""}
-${rhythmPattern === "moderate" ? "Create a balanced groove with steady hi-hat and standard kick/snare placement." : ""}
-${rhythmPattern === "busy" ? "Create an active pattern with ghost notes, fills, and cymbal variety." : ""}
-${rhythmPattern === "very_busy" ? "Create a dense, technical pattern with maximum activity." : ""}
-
-=== HUMANIZATION ===
-- Add ghost snares on offbeats (velocity 40-65)
-- Vary hi-hat velocity: downbeats louder, upbeats softer
-- No identical velocities on consecutive hits
-- Match the audio's intensity curve
-
-=== OUTPUT ===
-Return JSON:
+=== OUTPUT FORMAT ===
 {
   "grid": [{"step": 0, "drum": "kick", "velocity": 110}, ...],
   "style": "${style}",
-  "description": "Brief pattern description"
+  "description": "Brief description"
 }
 
 Drums: kick, snare, hihat_closed, hihat_open, tom_1, tom_2, crash, ride
-Steps: 0-31 (32 16th notes = 2 bars in 4/4)
+Steps: 0-31
+
+REMEMBER: Place kicks on detected steps [${beatGridStr}] to lock with the track!
 
 Return ONLY valid JSON.`;
 

@@ -5,6 +5,9 @@ export interface AudioAnalysis {
   duration: number;
   intensity: number[];
   rhythmPattern: string;
+  beatGrid: number[];
+  accentSteps: number[];
+  downbeatSteps: number[];
 }
 
 export async function analyzeAudio(audioFile: File): Promise<AudioAnalysis> {
@@ -21,6 +24,8 @@ export async function analyzeAudio(audioFile: File): Promise<AudioAnalysis> {
   const intensity = analyzeIntensity(channelData, sampleRate);
   const rhythmPattern = classifyRhythm(onsets, bpmResult.bpm, duration);
   
+  const { beatGrid, accentSteps, downbeatSteps } = mapOnsetsToSteps(onsets, bpmResult.bpm, duration);
+  
   audioContext.close();
   
   return {
@@ -29,7 +34,10 @@ export async function analyzeAudio(audioFile: File): Promise<AudioAnalysis> {
     onsets,
     duration,
     intensity,
-    rhythmPattern
+    rhythmPattern,
+    beatGrid,
+    accentSteps,
+    downbeatSteps
   };
 }
 
@@ -147,4 +155,50 @@ function classifyRhythm(onsets: number[], bpm: number, duration: number): string
   if (onsetsPerBar < 8) return "moderate";
   if (onsetsPerBar < 16) return "busy";
   return "dense";
+}
+
+function mapOnsetsToSteps(onsets: number[], bpm: number, duration: number): {
+  beatGrid: number[];
+  accentSteps: number[];
+  downbeatSteps: number[];
+} {
+  const sixteenthNoteDuration = 60 / bpm / 4;
+  const twoBarsInSeconds = sixteenthNoteDuration * 32;
+  
+  const beatGrid: number[] = [];
+  const stepCounts: number[] = new Array(32).fill(0);
+  const stepEnergies: number[] = new Array(32).fill(0);
+  
+  onsets.forEach((onsetTime, idx) => {
+    const normalizedTime = onsetTime % twoBarsInSeconds;
+    const step = Math.round(normalizedTime / sixteenthNoteDuration) % 32;
+    stepCounts[step]++;
+    stepEnergies[step] += 1;
+  });
+  
+  for (let i = 0; i < 32; i++) {
+    if (stepCounts[i] > 0) {
+      beatGrid.push(i);
+    }
+  }
+  
+  const avgHits = stepCounts.reduce((a, b) => a + b, 0) / 32;
+  const accentSteps: number[] = [];
+  const downbeatSteps: number[] = [];
+  
+  for (let i = 0; i < 32; i++) {
+    if (stepCounts[i] > avgHits * 1.5) {
+      accentSteps.push(i);
+    }
+    if (i % 4 === 0 && stepCounts[i] > 0) {
+      downbeatSteps.push(i);
+    }
+  }
+  
+  if (accentSteps.length === 0 && beatGrid.length > 0) {
+    accentSteps.push(beatGrid[0]);
+    if (beatGrid.length > 4) accentSteps.push(beatGrid[Math.floor(beatGrid.length / 2)]);
+  }
+  
+  return { beatGrid, accentSteps, downbeatSteps };
 }
