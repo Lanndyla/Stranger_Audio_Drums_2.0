@@ -2,7 +2,7 @@ import * as Tone from "tone";
 
 export type DrumInstrument = "kick" | "snare" | "hihat_closed" | "hihat_open" | "tom_1" | "tom_2" | "crash" | "ride";
 
-export type DrumKit = "modern_metal" | "vintage_rock" | "808_trap" | "acoustic";
+export type DrumKit = "custom_samples" | "modern_metal" | "vintage_rock" | "808_trap" | "acoustic";
 
 export const DRUM_ROWS: { id: DrumInstrument; label: string }[] = [
   { id: "crash", label: "CRASH" },
@@ -16,6 +16,7 @@ export const DRUM_ROWS: { id: DrumInstrument; label: string }[] = [
 ];
 
 export const DRUM_KITS: { id: DrumKit; label: string }[] = [
+  { id: "custom_samples", label: "Custom Samples" },
   { id: "modern_metal", label: "Modern Metal" },
   { id: "vintage_rock", label: "Vintage Rock" },
   { id: "808_trap", label: "808 Trap" },
@@ -29,6 +30,13 @@ const KIT_SETTINGS: Record<DrumKit, {
   distortion: number;
   reverb: number;
 }> = {
+  custom_samples: {
+    kickPitch: "C1",
+    kickDecay: 0.4,
+    snareDecay: 0.2,
+    distortion: 0.05,
+    reverb: 0.15
+  },
   modern_metal: {
     kickPitch: "C1",
     kickDecay: 0.4,
@@ -59,6 +67,17 @@ const KIT_SETTINGS: Record<DrumKit, {
   }
 };
 
+const SAMPLE_URLS: Record<DrumInstrument, string> = {
+  kick: "/samples/kick.wav",
+  snare: "/samples/snare.wav",
+  hihat_closed: "/samples/hihat_closed.wav",
+  hihat_open: "/samples/hihat_open.wav",
+  tom_1: "/samples/tom.wav",
+  tom_2: "/samples/tom.wav",
+  crash: "/samples/hihat_open.wav",
+  ride: "/samples/hihat_closed.wav",
+};
+
 class AudioEngine {
   private kick: Tone.MembraneSynth | null = null;
   private snare: Tone.NoiseSynth | null = null;
@@ -69,8 +88,11 @@ class AudioEngine {
   private crash: Tone.NoiseSynth | null = null;
   private ride: Tone.NoiseSynth | null = null;
   
+  private samplers: Map<DrumInstrument, Tone.Player> = new Map();
+  private samplersLoaded = false;
+  
   private isInitialized = false;
-  private currentKit: DrumKit = "modern_metal";
+  private currentKit: DrumKit = "custom_samples";
   private reverb: Tone.Reverb | null = null;
   private distortion: Tone.Distortion | null = null;
   private compressor: Tone.Compressor | null = null;
@@ -95,9 +117,39 @@ class AudioEngine {
 
     this.distortion = new Tone.Distortion(0.1).connect(this.compressor);
 
+    await this.loadSamples();
     this.createInstruments();
     this.isInitialized = true;
     console.log("Audio Engine Initialized");
+  }
+
+  private async loadSamples() {
+    const drums: DrumInstrument[] = ["kick", "snare", "hihat_closed", "hihat_open", "tom_1", "tom_2", "crash", "ride"];
+    
+    const loadPromises = drums.map(async (drum) => {
+      try {
+        const player = new Tone.Player({
+          url: SAMPLE_URLS[drum],
+          onload: () => {
+            console.log(`Loaded sample: ${drum}`);
+          }
+        }).connect(this.compressor!);
+        
+        if (drum === "tom_2") {
+          player.playbackRate = 0.85;
+        }
+        
+        this.samplers.set(drum, player);
+      } catch (err) {
+        console.warn(`Failed to load sample for ${drum}:`, err);
+      }
+    });
+
+    await Promise.all(loadPromises);
+    
+    await new Promise(resolve => setTimeout(resolve, 500));
+    this.samplersLoaded = true;
+    console.log("All samples loaded");
   }
 
   private createInstruments() {
@@ -189,6 +241,16 @@ class AudioEngine {
     
     const vel = Math.max(0.1, velocity / 127);
     const t = time || Tone.now();
+
+    if (this.currentKit === "custom_samples" && this.samplersLoaded) {
+      const player = this.samplers.get(drum);
+      if (player && player.loaded) {
+        player.volume.value = Tone.gainToDb(vel) + 6;
+        player.start(t);
+        return;
+      }
+    }
+
     const settings = KIT_SETTINGS[this.currentKit];
 
     switch(drum) {
