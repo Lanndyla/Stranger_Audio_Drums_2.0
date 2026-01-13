@@ -264,6 +264,89 @@ export async function registerRoutes(
     }
   });
 
+  // Smart Beat - AI pattern generation from audio analysis
+  app.post("/api/patterns/smart-beat", async (req, res) => {
+    try {
+      const { 
+        bpm, 
+        style, 
+        rhythmPattern, 
+        onsetCount, 
+        duration, 
+        intensity, 
+        confidence,
+        apiKey 
+      } = req.body;
+
+      const client = apiKey ? new OpenAI({ apiKey }) : openai;
+
+      const densityDesc = rhythmPattern === "sparse" ? "minimal and spacious with lots of room to breathe" :
+                          rhythmPattern === "moderate" ? "moderately busy with a good groove" :
+                          rhythmPattern === "busy" ? "active and driving with many hits" :
+                          "extremely dense and technical";
+
+      const intensityProfile = Array.isArray(intensity) 
+        ? intensity.map((v: number, i: number) => `Segment ${i + 1}: ${Math.round(v * 100)}%`).join(", ")
+        : "Even intensity throughout";
+
+      const prompt = `You are an expert drummer creating a drum pattern to accompany an audio track.
+
+AUDIO ANALYSIS:
+- Detected BPM: ${bpm}
+- Detection Confidence: ${Math.round((confidence || 0.5) * 100)}%
+- Duration: ${Math.round(duration || 10)} seconds
+- Number of detected transients/onsets: ${onsetCount || 20}
+- Rhythm density: ${rhythmPattern} (${densityDesc})
+- Intensity profile: ${intensityProfile}
+
+REQUESTED STYLE: ${style}
+
+Generate a drum pattern that:
+1. Complements the detected rhythm - if sparse, keep drums spacious; if dense, add more activity
+2. Matches the ${style} genre characteristics
+3. Follows the intensity curve - build up in intense sections, pull back in quieter ones
+4. Uses 32 steps (2 bars of 16th notes in 4/4)
+
+Available drums: kick, snare, hihat_closed, hihat_open, tom_1, tom_2, crash, ride
+
+Return a JSON object with:
+{
+  "grid": [
+    {"step": 0, "drum": "kick", "velocity": 100},
+    {"step": 0, "drum": "hihat_closed", "velocity": 80},
+    ...
+  ],
+  "style": "${style}",
+  "description": "Brief description of the pattern"
+}
+
+Velocity should be 40-127. Use lower velocities (40-70) for ghost notes and higher (90-127) for accents.
+Steps are 0-31 (32 total 16th notes = 2 bars).
+
+Ensure the pattern grooves well and would complement the analyzed audio.`;
+
+      const completion = await client.chat.completions.create({
+        model: apiKey ? "gpt-4o" : "gpt-5.1",
+        messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" },
+      });
+
+      const content = completion.choices[0].message.content;
+      if (!content) throw new Error("No content received from AI");
+
+      const result = JSON.parse(content);
+      
+      if (!result.grid || !Array.isArray(result.grid)) {
+        throw new Error("Invalid grid data received from AI");
+      }
+
+      res.json(result);
+    } catch (error) {
+      console.error("Smart Beat Error:", error);
+      res.status(500).json({ message: "Failed to generate smart beat pattern" });
+    }
+  });
+
   // MIDI Export Route
   app.post(api.patterns.exportMidi.path, async (req, res) => {
     try {

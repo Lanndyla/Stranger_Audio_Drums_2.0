@@ -10,6 +10,7 @@ import { midiHandler } from "@/lib/midi";
 import { PatternList } from "@/components/PatternList";
 import { Controls } from "@/components/Controls";
 import { SequencerGrid } from "@/components/SequencerGrid";
+import { SmartBeat } from "@/components/SmartBeat";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -755,10 +756,25 @@ export default function Studio() {
         {/* Bottom Actions Bar */}
         <div className="h-16 bg-card border-t border-border flex items-center justify-between px-8 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] z-10">
           <div className="flex items-center gap-4 text-xs font-mono text-muted-foreground">
-             <span>STEPS: 32</span>
+             <span>STEPS: {stepCount}</span>
              <span>•</span>
              <span>COMPLEXITY: {complexity}%</span>
           </div>
+
+          <SmartBeat 
+            onPatternGenerated={(grid, detectedBpm) => {
+              if (isPlaying) stopPlayback();
+              setTimeSignature("4/4");
+              setGridData(grid);
+              setBpm(detectedBpm);
+              toast({
+                title: "Smart Beat Generated!",
+                description: `Created pattern from audio at ${detectedBpm} BPM`,
+                className: "bg-orange-500/20 border-orange-500 text-orange-100",
+              });
+            }}
+            currentStyle={style}
+          />
 
           <div className="flex gap-4">
             <Button variant="outline" size="sm" className="gap-2 border-muted-foreground/30 hover:border-primary/50" onClick={handleExport} data-testid="button-export">
