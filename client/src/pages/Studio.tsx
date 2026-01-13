@@ -444,7 +444,7 @@ export default function Studio() {
           <PatternList onSelect={(id) => setSelectedPatternId(id)} selectedId={selectedPatternId} />
         </div>
         
-        <div className="p-4 border-t border-border bg-black/20 text-[10px] text-muted-foreground font-mono flex items-center justify-between">
+        <div className="p-4 pb-6 shrink-0 border-t border-border bg-black/20 text-[10px] text-muted-foreground font-mono flex items-center justify-between">
           <span>v2.0.0</span>
           <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
             <DialogTrigger asChild>
@@ -754,7 +754,7 @@ export default function Studio() {
         </Tabs>
 
         {/* Bottom Actions Bar */}
-        <div className="h-16 bg-card border-t border-border flex items-center justify-between px-8 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] z-10">
+        <div className="h-20 min-h-20 shrink-0 bg-card border-t border-border flex items-center justify-between px-8 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] z-10 pb-2">
           <div className="flex items-center gap-4 text-xs font-mono text-muted-foreground">
              <span>STEPS: {stepCount}</span>
              <span>•</span>
