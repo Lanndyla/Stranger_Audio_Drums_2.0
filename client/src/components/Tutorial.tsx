@@ -112,15 +112,15 @@ export function Tutorial({ onClose }: TutorialProps) {
           arrowTop = "50%";
           break;
         case "right":
-          top = rect.top + rect.height / 2 - tooltipHeight / 2;
+          top = rect.top - tooltipHeight / 2;
           left = rect.right + padding;
           arrowLeft = "-8px";
-          arrowTop = "50%";
+          arrowTop = "30%";
           break;
       }
 
       left = Math.max(16, Math.min(left, window.innerWidth - tooltipWidth - 16));
-      top = Math.max(16, Math.min(top, window.innerHeight - tooltipHeight - 16));
+      top = Math.max(16, Math.min(top, window.innerHeight - tooltipHeight - 32));
 
       setTooltipStyle({
         position: "fixed",
