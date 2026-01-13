@@ -50,7 +50,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   {
     target: "[data-tutorial='track-velocities']",
     title: "Track Velocities",
-    content: "Control the volume of each drum track individually. The sliders next to each drum name let you mix - lower the hi-hats, boost the kick, find your perfect balance!",
+    content: "Adjust each drum's volume with these sliders. Mix your kit balance here!",
     position: "right"
   },
   {
@@ -82,8 +82,8 @@ export function Tutorial({ onClose }: TutorialProps) {
 
       const rect = target.getBoundingClientRect();
       const padding = 16;
-      const tooltipWidth = 320;
-      const tooltipHeight = 180;
+      const tooltipWidth = 280;
+      const tooltipHeight = 160;
 
       let top = 0;
       let left = 0;
