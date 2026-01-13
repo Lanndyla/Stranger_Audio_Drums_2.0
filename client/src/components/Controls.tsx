@@ -42,7 +42,7 @@ export function Controls({
       {/* Row 1: Main Controls */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
         {/* BPM Control */}
-        <div className="space-y-2">
+        <div className="space-y-2" data-tutorial="bpm-control">
           <div className="flex justify-between items-center">
             <Label className="font-mono text-[10px] text-primary/80 uppercase tracking-widest">Tempo</Label>
             <span className="font-display font-bold text-lg text-primary text-glow">{bpm}</span>
@@ -59,7 +59,7 @@ export function Controls({
         </div>
 
         {/* Style Selector */}
-        <div className="space-y-2">
+        <div className="space-y-2" data-tutorial="style-selector">
           <Label className="font-mono text-[10px] text-secondary/80 uppercase tracking-widest">Primary Style</Label>
           <Select value={style} onValueChange={setStyle}>
             <SelectTrigger className="h-9 border-secondary/30 focus:ring-secondary/50" data-testid="select-style">
@@ -85,7 +85,7 @@ export function Controls({
         </div>
 
         {/* Generate Button */}
-        <div className="space-y-2">
+        <div className="space-y-2" data-tutorial="generate-button">
           <Label className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest opacity-0">Action</Label>
           <Button 
             onClick={onGenerate} 

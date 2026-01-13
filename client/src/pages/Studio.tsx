@@ -11,6 +11,7 @@ import { PatternList } from "@/components/PatternList";
 import { Controls } from "@/components/Controls";
 import { SequencerGrid } from "@/components/SequencerGrid";
 import { SmartBeat } from "@/components/SmartBeat";
+import { Tutorial, TutorialButton } from "@/components/Tutorial";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -67,6 +68,15 @@ export default function Studio() {
   // Song Mode / Arrangement state
   const [arrangement, setArrangement] = useState<ArrangementPattern[]>([]);
   const [activeTab, setActiveTab] = useState("pattern");
+  
+  // Tutorial state - defer localStorage check to avoid SSR issues
+  const [showTutorial, setShowTutorial] = useState(false);
+  
+  useEffect(() => {
+    if (!localStorage.getItem("stranger_drums_tutorial_complete")) {
+      setShowTutorial(true);
+    }
+  }, []);
   
   // Track velocity multipliers (per-track volume control)
   const [trackVelocities, setTrackVelocities] = useState<Record<string, number>>(() => ({
@@ -419,6 +429,7 @@ export default function Studio() {
 
   return (
     <div className="flex h-screen bg-background text-foreground overflow-hidden">
+      {showTutorial && <Tutorial onClose={() => setShowTutorial(false)} />}
       
       {/* Sidebar */}
       <aside className="w-64 border-r border-border bg-card/50 flex flex-col z-20 shadow-2xl">
@@ -445,7 +456,7 @@ export default function Studio() {
         </div>
         
         <div className="p-4 border-t border-border bg-black/20 text-[10px] text-muted-foreground font-mono flex items-center justify-between">
-          <span>v2.0.0</span>
+          <TutorialButton onClick={() => setShowTutorial(true)} />
           <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
             <DialogTrigger asChild>
               <Button variant="ghost" size="icon" className="h-6 w-6" data-testid="button-settings">
@@ -665,6 +676,7 @@ export default function Studio() {
                         )}
                         onClick={togglePlayback}
                         data-testid="button-play"
+                        data-tutorial="play-button"
                       >
                         {isPlaying ? <Square className="fill-current mr-2 w-3 h-3" /> : <Play className="fill-current mr-2 w-3 h-3" />}
                         {isPlaying ? "STOP" : "PLAY"}
@@ -672,16 +684,18 @@ export default function Studio() {
                     </div>
                   </div>
                   
-                  <SequencerGrid 
-                    gridData={gridData} 
-                    currentStep={currentStep}
-                    onToggleStep={handleToggleStep}
-                    isPlaying={isPlaying}
-                    trackVelocities={trackVelocities}
-                    onTrackVelocityChange={handleTrackVelocityChange}
-                    stepCount={stepCount}
-                    timeSignature={timeSignature}
-                  />
+                  <div data-tutorial="sequencer-grid">
+                    <SequencerGrid 
+                      gridData={gridData} 
+                      currentStep={currentStep}
+                      onToggleStep={handleToggleStep}
+                      isPlaying={isPlaying}
+                      trackVelocities={trackVelocities}
+                      onTrackVelocityChange={handleTrackVelocityChange}
+                      stepCount={stepCount}
+                      timeSignature={timeSignature}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -784,7 +798,7 @@ export default function Studio() {
             
             <Dialog open={isSaveOpen} onOpenChange={setIsSaveOpen}>
               <DialogTrigger asChild>
-                <Button variant="secondary" size="sm" className="gap-2 font-bold shadow-[0_0_15px_rgba(255,0,255,0.3)]" data-testid="button-save">
+                <Button variant="secondary" size="sm" className="gap-2 font-bold shadow-[0_0_15px_rgba(255,0,255,0.3)]" data-testid="button-save" data-tutorial="save-button">
                   <Save className="w-4 h-4" />
                   SAVE PATTERN
                 </Button>
