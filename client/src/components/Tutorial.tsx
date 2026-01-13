@@ -51,7 +51,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     target: "[data-tutorial='track-velocities']",
     title: "Track Velocities",
     content: "Adjust each drum's volume with these sliders. Mix your kit balance here!",
-    position: "right"
+    position: "top"
   },
   {
     target: "[data-tutorial='save-button']",
