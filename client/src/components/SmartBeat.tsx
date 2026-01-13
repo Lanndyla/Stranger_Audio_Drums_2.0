@@ -149,8 +149,9 @@ export function SmartBeat({ onPatternGenerated, currentStyle }: SmartBeatProps) 
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
+              onClick={() => document.getElementById('smart-beat-file-input')?.click()}
               className={`
-                relative border-2 border-dashed rounded-lg p-12 text-center transition-all duration-300
+                relative border-2 border-dashed rounded-lg p-12 text-center transition-all duration-300 cursor-pointer
                 ${isDragging 
                   ? "border-orange-400 bg-orange-500/10 scale-[1.02]" 
                   : "border-white/20 hover:border-orange-400/50 bg-black/40"
@@ -158,10 +159,11 @@ export function SmartBeat({ onPatternGenerated, currentStyle }: SmartBeatProps) 
               `}
             >
               <input
+                id="smart-beat-file-input"
                 type="file"
                 accept="audio/*"
                 onChange={handleFileSelect}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                className="hidden"
                 data-testid="input-smart-beat-file"
               />
               
