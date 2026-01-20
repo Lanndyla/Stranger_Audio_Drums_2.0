@@ -3,14 +3,11 @@ import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
-import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import MidiWriter from "midi-writer-js";
 
-// Initialize OpenAI client with Replit integration env vars
-const openai = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-});
+// Initialize Gemini client
+const googleAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function registerRoutes(
   httpServer: Server,
@@ -163,8 +160,7 @@ export async function registerRoutes(
       const { style, bpm, type } = api.patterns.generate.input.parse(req.body);
       const { complexity = 50, secondaryStyle, styleMix = 70, timeSignature = "4/4", stepCount = 32, apiKey } = req.body;
       
-      // Use personal API key if provided, otherwise use default
-      const client = apiKey ? new OpenAI({ apiKey }) : openai;
+      // Gemini client will be created above with apiKey if provided
 
       let styleDescription = style;
       if (secondaryStyle && secondaryStyle !== "none") {
@@ -303,13 +299,9 @@ Target note count: ~${Math.floor((complexity / 100) * (stepCount * 2.5))} notes
 
 Return ONLY valid JSON.`;
 
-      const completion = await client.chat.completions.create({
-        model: apiKey ? "gpt-4o" : "gpt-5.1",
-        messages: [{ role: "user", content: prompt }],
-        response_format: { type: "json_object" },
-      });
-
-      const content = completion.choices[0].message.content;
+      const model = apiKey ? new GoogleGenerativeAI(apiKey).getGenerativeModel({ model: "gemini-2.0-flash" }) : googleAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      const response = await model.generateContent(prompt);
+      const content = response.response.text();
       if (!content) throw new Error("No content received from AI");
 
       const result = JSON.parse(content);
@@ -426,7 +418,7 @@ Return ONLY valid JSON.`;
         apiKey 
       } = req.body;
 
-      const client = apiKey ? new OpenAI({ apiKey }) : openai;
+      // Gemini client will be created dynamically with apiKey if provided
 
       const densityDesc = rhythmPattern === "sparse" ? "minimal and spacious with lots of room to breathe" :
                           rhythmPattern === "moderate" ? "moderately busy with a good groove" :
@@ -502,13 +494,9 @@ REMEMBER: Place kicks on detected steps [${beatGridStr}] to lock with the track!
 
 Return ONLY valid JSON.`;
 
-      const completion = await client.chat.completions.create({
-        model: apiKey ? "gpt-4o" : "gpt-5.1",
-        messages: [{ role: "user", content: prompt }],
-        response_format: { type: "json_object" },
-      });
-
-      const content = completion.choices[0].message.content;
+      const model = apiKey ? new GoogleGenerativeAI(apiKey).getGenerativeModel({ model: "gemini-2.0-flash" }) : googleAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      const response = await model.generateContent(prompt);
+      const content = response.response.text();
       if (!content) throw new Error("No content received from AI");
 
       const result = JSON.parse(content);
