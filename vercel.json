@@ -1,11 +1,6 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "devCommand": "npm run dev",
-  "functions": {
-    "server/index.ts": {
-      "maxDuration": 60
-    }
-  }
+  "devCommand": "npm run dev"
 }
 
