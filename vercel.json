@@ -6,11 +6,6 @@
     "server/index.ts": {
       "maxDuration": 60
     }
-  },
-  "env": {
-    "GEMINI_API_KEY": "@gemini_api_key",
-    "DATABASE_URL": "@database_url",
-    "NODE_ENV": "production"
   }
 }
 
